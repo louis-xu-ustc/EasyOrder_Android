@@ -4,10 +4,18 @@
     android:layout_height="match_parent"
     tools:context="edu.cmu.EasyOrder_Android.RetailerPostFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ImageButton
+        android:id="@+id/order_confirm_button"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_gravity="top|end"
+        android:background="@drawable/add_circle"/>
+
+    <ListView
+        android:id="@+id/retailer_dish_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:paddingTop="40dp">
+    </ListView>
 
 </FrameLayout>

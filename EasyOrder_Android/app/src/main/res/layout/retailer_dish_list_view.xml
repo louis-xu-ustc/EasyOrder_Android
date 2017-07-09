@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="6dip">
+
+    <ImageView
+        android:id="@+id/retailer_dish_image"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/image"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" />
+
+    <TextView
+        android:id="@+id/retailer_dish_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/retailer_dish_image"
+        android:paddingBottom="10dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#3399FF"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/retailer_dish_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/retailer_dish_name"
+        android:layout_toEndOf="@+id/retailer_dish_image"
+        android:paddingStart="2dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/retailer_dish_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_below="@+id/retailer_dish_price"
+        android:paddingStart="2dp"
+        android:layout_toEndOf="@+id/retailer_dish_image"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <RatingBar
+        android:id="@+id/retailer_ratingBar"
+        style="?android:attr/ratingBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/retailer_dish_quantity"
+        android:layout_toEndOf="@+id/retailer_dish_image"
+        android:isIndicator="false"
+        android:numStars="5"
+        android:rating="2.0"
+        android:stepSize="1.0" />
+
+</RelativeLayout>
+

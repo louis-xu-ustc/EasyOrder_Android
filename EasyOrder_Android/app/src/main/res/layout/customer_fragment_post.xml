@@ -13,9 +13,10 @@
         android:background="@drawable/shopping_cart"/>
 
     <ListView
-        android:id="@+id/dish_list"
+        android:id="@+id/customer_dish_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="40dp"></ListView>
+        android:paddingTop="40dp">
+    </ListView>
 
 </FrameLayout>

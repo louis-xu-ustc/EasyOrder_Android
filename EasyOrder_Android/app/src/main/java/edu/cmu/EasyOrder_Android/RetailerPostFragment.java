@@ -7,6 +7,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 
 /**
@@ -28,6 +32,9 @@ public class RetailerPostFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private ArrayAdapter dishAdapter;
+    private ListView mListView;
+    ArrayList<Dish> dishArrayList;
 
     public RetailerPostFragment() {
         // Required empty public constructor
@@ -58,13 +65,20 @@ public class RetailerPostFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        dishArrayList = new ArrayList<>();
+        //FIXME
+        fillFakeDishArrayList();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.retailer_fragment_post, container, false);
+        View rootView = inflater.inflate(R.layout.retailer_fragment_post, container, false);
+        mListView = (ListView) rootView.findViewById(R.id.retailer_dish_list);
+        dishAdapter = new RetailerDishListAdapter(getContext(), R.layout.retailer_dish_list_view, dishArrayList);
+        mListView.setAdapter(dishAdapter);
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -104,5 +118,34 @@ public class RetailerPostFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    private void fillFakeDishArrayList() {
+        Dish dish1 = new Dish();
+        dish1.setName("pizza");
+        dish1.setPrice(10);
+        //FIXME
+//        dish1.setImage(ContextCompat.getDrawable(getContext(),R.drawable.pizza).toString());
+        dish1.setQuantity(1);
+        dish1.setRate(3);
+        dishArrayList.add(dish1);
+
+        Dish dish2 = new Dish();
+        dish2.setName("salad");
+        dish2.setPrice(12);
+        // FIXME
+//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
+        dish2.setQuantity(0);
+        dish2.setRate(4);
+        dishArrayList.add(dish2);
+
+        Dish dish3 = new Dish();
+        dish3.setName("fish & chips");
+        dish3.setPrice(0);
+        // FIXME
+//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
+        dish3.setQuantity(0);
+        dish3.setRate(2);
+        dishArrayList.add(dish3);
     }
 }
