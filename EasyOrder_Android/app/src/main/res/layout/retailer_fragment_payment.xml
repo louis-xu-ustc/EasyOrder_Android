@@ -4,10 +4,30 @@
     android:layout_height="match_parent"
     tools:context=".RetailerPaymentFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ImageView
+        android:id="@+id/customer_dish_image"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/image"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:src="@drawable/order_list"/>
+
+    <ListView
+        android:id="@+id/retailer_order_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="347dp"
+        android:layout_marginTop="100dp">
+    </ListView>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="450dp"
+        android:layout_gravity="end"
+        android:text="notififySelected"
+        android:gravity="center"/>
 
 </FrameLayout>

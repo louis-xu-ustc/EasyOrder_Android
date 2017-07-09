@@ -51,7 +51,7 @@
                 android:layout_gravity="center"
                 android:padding="3dp"
                 android:text="4616 Henry Street"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/black" />
 
             <TextView
@@ -60,7 +60,7 @@
                 android:layout_gravity="center"
                 android:padding="3dp"
                 android:text="GHC"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/black" />
 
             <TextView
@@ -69,7 +69,7 @@
                 android:layout_gravity="center"
                 android:padding="3dp"
                 android:text="UC"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/black" />
         </LinearLayout>
 

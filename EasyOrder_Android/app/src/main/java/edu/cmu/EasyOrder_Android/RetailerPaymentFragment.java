@@ -7,6 +7,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,6 +31,9 @@ public class RetailerPaymentFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private ArrayAdapter orderListAdapter;
+    private ListView mListView;
+    ArrayList<Order> orderArrayList;
 
     public RetailerPaymentFragment() {
         // Required empty public constructor
@@ -57,13 +64,21 @@ public class RetailerPaymentFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        orderArrayList = new ArrayList<>();
+        //FIXME
+        fillFakeOrderArrayList();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.retailer_fragment_payment, container, false);
+        View rootView = inflater.inflate(R.layout.retailer_fragment_payment, container, false);
+        mListView = (ListView) rootView.findViewById(R.id.retailer_order_list);
+        orderListAdapter = new RetailerOrderListAdapter(getContext(), R.layout.retailer_order_list_view, orderArrayList);
+        mListView.setAdapter(orderListAdapter);
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -103,5 +118,17 @@ public class RetailerPaymentFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    private void fillFakeOrderArrayList() {
+        Order order1 = new Order();
+        order1.setUserName("Yangjie Jie");
+        order1.setIfNotify(true);
+        orderArrayList.add(order1);
+
+        Order order2 = new Order();
+        order2.setUserName("Yunpeng Xu");
+        order2.setIfNotify(false);
+        orderArrayList.add(order2);
     }
 }

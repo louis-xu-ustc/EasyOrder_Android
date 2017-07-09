@@ -11,4 +11,7 @@
     <string name="image">dish_image</string>
     <string name="add">+</string>
     <string name="minus">-</string>
+
+    <string name="switch_yes">paid</string>
+    <string name="switch_no">unpaid</string>
 </resources>
