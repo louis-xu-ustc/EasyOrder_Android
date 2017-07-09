@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="6dip">
+
+    <ImageView
+        android:id="@+id/history_order_dish_image"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/image"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" />
+
+    <TextView
+        android:id="@+id/history_order_dish_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/history_order_dish_image"
+        android:paddingBottom="10dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#3399FF"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/history_order_dish_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/history_order_dish_name"
+        android:layout_toEndOf="@+id/history_order_dish_image"
+        android:paddingStart="2dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/history_order_dish_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_below="@+id/history_order_dish_price"
+        android:layout_toEndOf="@+id/history_order_dish_image"
+        android:layout_weight="0.2"
+        android:gravity="center_vertical"
+        android:paddingEnd="40dp"
+        android:paddingStart="2dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+</RelativeLayout>
+

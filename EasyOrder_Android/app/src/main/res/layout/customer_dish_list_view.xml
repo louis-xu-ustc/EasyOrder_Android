@@ -36,7 +36,7 @@
         android:textSize="18sp" />
 
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/dish_action_bar"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
