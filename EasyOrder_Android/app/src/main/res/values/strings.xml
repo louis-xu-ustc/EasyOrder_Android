@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">EasyOrder</string>
-    <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
-
-
+    <string name="app_retailer_side">EasyOrder-Retailer</string>
+    <string name="app_customer_side">EasyOrder-Customer</string>
     <string name="retailer_login">Sign in as retailer</string>
     <string name="customer_login">Sign in as customer</string>
-
+    <string name="action_settings">Settings</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_retailer_main">RetailerMainActivity</string>
+
+     <!--post tab-->
+    <string name="image">dish_image</string>
+    <string name="add">+</string>
+    <string name="minus">-</string>
 </resources>
