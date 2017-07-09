@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/easy_order_login_background">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/easy_order_logo"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="50dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:paddingRight="21dp"
+        android:paddingLeft="21dp"
+        android:text="@string/customer_login"
+        android:id="@+id/customer_login_button"
+        android:background="@android:color/holo_blue_light"
+        android:layout_below="@+id/retailer_login_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/retailer_login"
+        android:id="@+id/retailer_login_button"
+        android:textStyle="bold"
+        android:paddingRight="25dp"
+        android:paddingLeft="25dp"
+        android:background="@android:color/holo_blue_light"
+        android:layout_below="@+id/imageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="55dp" />
+
+</RelativeLayout>
