@@ -161,17 +161,6 @@ public class CustomerMapFragment extends Fragment {
             }
         });
 
-        // Register Search button callback
-        Button searchButton = (Button) v.findViewById(R.id.customer_search_location_button);
-        mQuery = (EditText) v.findViewById(R.id.customer_search_location_text);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String query = mQuery.getText().toString();
-                new searchAddress().execute(query);
-            }
-        });
-
         return v;
     }
 
@@ -212,89 +201,6 @@ public class CustomerMapFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-    }
-
-    private class searchAddress extends AsyncTask<String, Void, List<Address>> {
-        @Override
-        protected List<Address> doInBackground(String... params) {
-            Geocoder geoCoder = new Geocoder(getActivity(), Locale.getDefault());
-
-            try {
-                List<Address> addresses = geoCoder.getFromLocationName(params[0], 5);
-                if (addresses.size() > 0) {
-                    return addresses;
-                } else {
-                    Log.d("SearchLocation", "Cannot get address from search query");
-                    Toast.makeText(getActivity(), "No mapped search address found", Toast.LENGTH_SHORT).show();
-                    return null;
-                }
-            } catch (IOException eIO) {
-                Log.d("SearchLocation", "Cannot get address from search query");
-                Toast.makeText(getActivity(), "No mapped search address found", Toast.LENGTH_SHORT).show();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(List<Address> addresses) {
-            mAdapter = new ArrayAdapter<Address>(getContext(),
-                    android.R.layout.simple_list_item_1, android.R.id.text1, addresses) {
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent) {
-                    TextView textView = (TextView) super.getView(position, convertView, parent);
-                    Address address = getItem(position);
-                    String formattedAddr = String.format("%s, %s, %s ",
-                            address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "", address.getLocality(),
-                            address.getCountryName());
-                    textView.setText(formattedAddr);
-                    return textView;
-                }
-            };
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle("Choose Location")
-                    .setAdapter(mAdapter, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            // place marker for target location
-                            Address selectedAddr = mAdapter.getItem(which);
-                            targetLatLng = new LatLng(selectedAddr.getLatitude(), selectedAddr.getLongitude());
-                            // CameraPosition cameraPosition = new CameraPosition.Builder().target(curLatLng).zoom(12).build();
-                            // googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-                            googleMap.clear();
-                            String formattedAddr = String.format("%s, %s",
-                                    selectedAddr.getMaxAddressLineIndex() > 0 ? selectedAddr.getAddressLine(0) : "", selectedAddr.getLocality());
-                            MarkerOptions targetMarker = new MarkerOptions().title(formattedAddr).position(targetLatLng).icon(BitmapDescriptorFactory
-                                    .defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                            googleMap.addMarker(targetMarker);
-
-                            // place marker for current location
-                            // Check Access Location Permission
-                            if (ActivityCompat.checkSelfPermission(getActivity(),
-                                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                                Log.d("Second View", "Location Permission Not Granted");
-                                return;
-                            }
-
-                            curLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (curLocation == null) {
-                                Log.d("Second View", "GPS Service Available");
-                                return;
-                            }
-
-                            String QueryString = String.format("https://maps.googleapis.com/maps/api/directions/json?origin=%f,%f&destination=%f,%f&key=%s",
-                                    curLocation.getLatitude(), curLocation.getLongitude(),
-                                    targetLatLng.latitude, targetLatLng.longitude,
-                                    getActivity().getString(R.string.google_maps_key));
-
-                            new searchETA().execute(QueryString);
-
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
     }
 
     private class searchETA extends AsyncTask<String, Void, JSONObject> {

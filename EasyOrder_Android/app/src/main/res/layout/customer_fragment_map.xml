@@ -8,25 +8,122 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:weightSum="10">
-            <EditText
-                android:id="@+id/customer_search_location_text"
-                android:layout_width="0px"
-                android:layout_height="wrap_content"
-                android:layout_weight="7"/>
-            <Button
-                android:id="@+id/customer_search_location_button"
-                android:layout_width="0px"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="Search"/>
-        </LinearLayout>
+
         <com.google.android.gms.maps.MapView
             android:id="@+id/customer_mapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="425dp" />
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp">
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:paddingTop="5dip"
+                    android:paddingEnd="40dip"
+                    android:text="Picking Locations:"
+                    android:textStyle="bold"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:layout_weight="1"
+                    android:gravity="left"
+                    android:paddingStart="20dip"
+                    android:text="ETA:"
+                    android:textStyle="bold"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
+
+            <!-- Row 1 with 2 columns -->
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:paddingTop="3dip"
+                    android:paddingEnd="40dip"
+                    android:text="4616 Henry Street"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/andrewId"
+                    android:layout_weight="1"
+                    android:gravity="left"
+                    android:paddingStart="20dip"
+                    android:text="10 min"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </TableRow>
+
+            <!-- Row 2 with 2 columns -->
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:paddingTop="3dip"
+                    android:paddingEnd="40dip"
+                    android:text="GHC"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/dateTime"
+                    android:layout_weight="1"
+                    android:gravity="left"
+                    android:paddingStart="20dip"
+                    android:text="15 min"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </TableRow>
+
+            <!-- Row 3 with 2 columns -->
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:paddingTop="3dip"
+                    android:paddingEnd="40dip"
+                    android:text="UC"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/device"
+                    android:layout_weight="1"
+                    android:gravity="left"
+                    android:paddingStart="20dip"
+                    android:text="20 min"
+                    android:textColor="#000000"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </TableRow>
+        </TableLayout>
+
     </LinearLayout>
 </FrameLayout>
