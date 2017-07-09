@@ -4,4 +4,29 @@
     android:layout_height="match_parent"
     tools:context="edu.cmu.EasyOrder_Android.CustomerMapFragment">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="10">
+            <EditText
+                android:id="@+id/customer_search_location_text"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="7"/>
+            <Button
+                android:id="@+id/customer_search_location_button"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="Search"/>
+        </LinearLayout>
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/customer_mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 </FrameLayout>

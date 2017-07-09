@@ -16,6 +16,19 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        buildTypes.each {
+            it.buildConfigField 'String', 'CONSUMER_KEY', CONSUMER_KEY
+            it.resValue 'string', 'CONSUMER_KEY', CONSUMER_KEY
+
+            it.buildConfigField 'String', 'CONSUMER_SECRET', CONSUMER_SECRET
+            it.resValue 'string', 'CONSUMER_SECRET', CONSUMER_SECRET
+
+            it.buildConfigField 'String', 'ACCESS_TOKEN', ACCESS_TOKEN
+            it.resValue 'string', 'ACCESS_TOKEN', ACCESS_TOKEN
+
+            it.buildConfigField 'String', 'ACCESS_TOKEN_SECRET', ACCESS_TOKEN_SECRET
+            it.resValue 'string', 'ACCESS_TOKEN_SECRET', ACCESS_TOKEN_SECRET
+        }
     }
 }
 
@@ -27,5 +40,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.google.android.gms:play-services-location:11.0.1'
+    compile 'com.google.android.gms:play-services-maps:11.0.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'org.twitter4j:twitter4j-core:4.0.4'
     testCompile 'junit:junit:4.12'
 }

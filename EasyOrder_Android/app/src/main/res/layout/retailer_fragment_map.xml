@@ -2,12 +2,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RetailerMapFragment">
+    tools:context="edu.cmu.EasyOrder_Android.RetailerMapFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="10">
+            <EditText
+                android:id="@+id/retailer_search_location_text"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="7"/>
+            <Button
+                android:id="@+id/retailer_search_location_button"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="Search"/>
+        </LinearLayout>
 
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/retailer_mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 </FrameLayout>
