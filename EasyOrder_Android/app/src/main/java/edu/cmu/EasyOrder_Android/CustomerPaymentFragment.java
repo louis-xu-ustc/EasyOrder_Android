@@ -7,6 +7,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 
 /**
@@ -28,6 +33,11 @@ public class CustomerPaymentFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private ArrayAdapter dishAdapter;
+    private ListView mListView;
+    private ArrayList<Dish> dishArrayList;
+    private Order order;
+    private TextView totalPrice;
 
     public CustomerPaymentFragment() {
         // Required empty public constructor
@@ -58,13 +68,24 @@ public class CustomerPaymentFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        order = new Order();
+        dishArrayList = new ArrayList<>();
+        fillFakeOrderDetail();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.customer_fragment_payment, container, false);
+        View rootView = inflater.inflate(R.layout.customer_fragment_payment, container, false);
+
+        mListView = (ListView) rootView.findViewById(R.id.customer_order_detail_list);
+        totalPrice = (TextView) rootView.findViewById(R.id.customer_order_detail_total_price);
+        totalPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(order.getTotalPrice())).toString());
+        dishAdapter = new CustomerOrderDetailAdapter(getContext(), R.layout.customer_order_detail_list_view, dishArrayList);
+        mListView.setAdapter(dishAdapter);
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -104,5 +125,14 @@ public class CustomerPaymentFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    private void fillFakeOrderDetail() {
+        Dish dish = new Dish();
+        dish.setName("Piazza");
+        dish.setQuantity(1);
+        dish.setPrice(10);
+        order.addDish(dish);
+        dishArrayList = order.getDishList();
     }
 }
