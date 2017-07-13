@@ -1,16 +1,22 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+
+import static edu.cmu.EasyOrder_Android.Utils.DBG;
 
 
 /**
@@ -78,6 +84,46 @@ public class CustomerPostFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.customer_fragment_post, container, false);
         mListView = (ListView) rootView.findViewById(R.id.customer_dish_list);
         dishAdapter = new CustomerDishListAdapter(getContext(), R.layout.customer_dish_list_view, dishArrayList);
+
+        ImageButton shoppingCart = (ImageButton) rootView.findViewById(R.id.customer_order_confirm_button);
+        View convertView = (View) inflater.inflate(R.layout.customer_shopping_cart_confirm_list, null);
+        ListView lv = (ListView) convertView.findViewById(R.id.customer_order_confirm_list);
+        shoppingCart.setTag(R.string.first_tag, convertView);
+        shoppingCart.setTag(R.string.second_tag, lv);
+        shoppingCart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<String> orderedList = new ArrayList<String>();
+                for (Dish dish : dishArrayList) {
+                    if (dish.getQuantity() > 0) {
+                        orderedList.add(dish.toString());
+                    }
+                }
+                String[] dishInfo = new String[orderedList.size()];
+                dishInfo = orderedList.toArray(dishInfo);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                View vv = (View) v.getTag(R.string.first_tag);
+                // fix the specified child already has a parent bug
+                if (vv.getParent() != null) {
+                    ((ViewGroup) vv.getParent()).removeView(vv);
+                }
+                builder.setView(vv);
+                builder.setTitle("Order Confirm:");
+                ListView lv = (ListView) v.getTag(R.string.second_tag);
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, dishInfo);
+                lv.setAdapter(adapter);
+                builder.setCancelable(false);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //do things
+                        //TODO save to backend database
+                        Log.d(DBG, "Further operation to save to backend database");
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
         mListView.setAdapter(dishAdapter);
         return rootView;
     }

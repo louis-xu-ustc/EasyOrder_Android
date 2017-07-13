@@ -50,4 +50,13 @@ public class Dish {
     public void setRate(int rate) {
         this.rate = rate;
     }
+
+    public int getTotalPrice() {
+        return this.price * this.quantity;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + "\t\t\t" + getQuantity() + "\t\t\t" + "$" + getTotalPrice();
+    }
 }
