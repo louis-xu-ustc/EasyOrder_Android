@@ -1,5 +1,6 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -23,8 +24,7 @@ import android.widget.TextView;
 public class RetailerMainActivity extends AppCompatActivity implements
         RetailerPostFragment.OnFragmentInteractionListener,
         RetailerMapFragment.OnFragmentInteractionListener,
-        RetailerPaymentFragment.OnFragmentInteractionListener,
-        RetailerProfileFragment.OnFragmentInteractionListener {
+        RetailerPaymentFragment.OnFragmentInteractionListener {
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -87,9 +87,14 @@ public class RetailerMainActivity extends AppCompatActivity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.retailer_profile_button) {
+            Intent retailerProfile = new Intent(RetailerMainActivity.this, RetailerProfileActivity.class);
+            startActivity(retailerProfile);
             return true;
         }
 
@@ -152,16 +157,14 @@ public class RetailerMainActivity extends AppCompatActivity implements
                     return new RetailerMapFragment();
                 case 2:
                     return new RetailerPaymentFragment();
-                case 3:
-                    return new RetailerProfileFragment();
             }
             return null;
         }
 
         @Override
         public int getCount() {
-            // Show 4 total pages.
-            return 4;
+            // Show 3 total pages.
+            return 3;
         }
 
         @Override
@@ -173,8 +176,6 @@ public class RetailerMainActivity extends AppCompatActivity implements
                     return "Map";
                 case 2:
                     return "Payment";
-                case 3:
-                    return "Profile";
             }
             return null;
         }

@@ -8,7 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -78,6 +80,15 @@ public class RetailerPaymentFragment extends Fragment {
         mListView = (ListView) rootView.findViewById(R.id.retailer_order_list);
         orderListAdapter = new RetailerOrderListAdapter(getContext(), R.layout.retailer_order_list_view, orderArrayList);
         mListView.setAdapter(orderListAdapter);
+        Button notifyAllButton = (Button) rootView.findViewById(R.id.retailer_notify_all_button);
+        notifyAllButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO add action to notify all unpaid users
+                Toast.makeText(getActivity(), "Further operation to notify all unpaid users!",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
         return rootView;
     }
 

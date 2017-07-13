@@ -2,9 +2,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="edu.cmu.EasyOrder_Android.RetailerMainActivity">
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/action_settings"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/action_settings"-->
+        <!--app:showAsAction="never" />-->
+
+    <item android:id="@+id/retailer_profile_button"
+        android:title="retailer_profile"
+        android:icon="@android:drawable/ic_menu_add"
+        android:titleCondensed="profile"
+        android:alphabeticShortcut="+"
+        app:showAsAction="ifRoom"></item>
 </menu>

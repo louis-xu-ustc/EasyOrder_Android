@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -115,9 +116,9 @@ public class CustomerPostFragment extends Fragment {
                 builder.setCancelable(false);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //do things
                         //TODO save to backend database
-                        Log.d(DBG, "Further operation to save to backend database");
+                        Toast.makeText(getActivity(), "Further operation to save to backend database!",
+                                Toast.LENGTH_LONG).show();
                     }
                 });
                 AlertDialog alert = builder.create();

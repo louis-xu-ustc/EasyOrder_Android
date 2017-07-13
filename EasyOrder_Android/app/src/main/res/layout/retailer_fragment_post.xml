@@ -5,9 +5,10 @@
     tools:context="edu.cmu.EasyOrder_Android.RetailerPostFragment">
 
     <ImageButton
-        android:id="@+id/order_confirm_button"
-        android:layout_width="50dip"
-        android:layout_height="50dip"
+        android:id="@+id/retailer_post_dish_button"
+        android:layout_width="40dip"
+        android:layout_height="40dip"
+        android:padding="10dip"
         android:layout_gravity="top|end"
         android:background="@drawable/add_circle"/>
 
@@ -15,7 +16,7 @@
         android:id="@+id/retailer_dish_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="40dp">
+        android:layout_marginTop="40dp">
     </ListView>
 
 </FrameLayout>

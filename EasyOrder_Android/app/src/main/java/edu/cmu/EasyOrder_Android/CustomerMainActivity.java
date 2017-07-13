@@ -1,5 +1,6 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class CustomerMainActivity extends AppCompatActivity implements CustomerMapFragment.OnFragmentInteractionListener,
+public class CustomerMainActivity extends AppCompatActivity implements
+        CustomerMapFragment.OnFragmentInteractionListener,
         CustomerPaymentFragment.OnFragmentInteractionListener,
-        CustomerPostFragment.OnFragmentInteractionListener,
-        CustomerProfileFragment.OnFragmentInteractionListener {
+        CustomerPostFragment.OnFragmentInteractionListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -84,7 +85,13 @@ public class CustomerMainActivity extends AppCompatActivity implements CustomerM
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+
+        if (id == R.id.customer_profile_button) {
+            Intent customerProfile = new Intent(CustomerMainActivity.this, CustomerProfileActivity.class);
+            startActivity(customerProfile);
             return true;
         }
 
@@ -147,8 +154,6 @@ public class CustomerMainActivity extends AppCompatActivity implements CustomerM
                     return new CustomerMapFragment();
                 case 2:
                     return new CustomerPaymentFragment();
-                case 3:
-                    return new CustomerProfileFragment();
                 default:
                     break;
             }
@@ -157,8 +162,8 @@ public class CustomerMainActivity extends AppCompatActivity implements CustomerM
 
         @Override
         public int getCount() {
-            // Show 4 total pages.
-            return 4;
+            // Show 3 total pages.
+            return 3;
         }
 
         @Override
@@ -170,8 +175,6 @@ public class CustomerMainActivity extends AppCompatActivity implements CustomerM
                     return "Map";
                 case 2:
                     return "Payment";
-                case 3:
-                    return "Profile";
             }
             return null;
         }

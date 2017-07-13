@@ -5,7 +5,7 @@
     tools:context=".RetailerPaymentFragment">
 
     <ImageView
-        android:id="@+id/customer_dish_image"
+        android:id="@+id/retailer_dish_image"
         android:layout_width="fill_parent"
         android:layout_height="100dp"
         android:layout_centerVertical="true"
@@ -22,7 +22,7 @@
     </ListView>
 
     <Button
-        android:id="@+id/customer_notify_all"
+        android:id="@+id/retailer_notify_all_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="450dp"
