@@ -54,9 +54,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/retailer_dish_quantity"
         android:layout_toEndOf="@+id/retailer_dish_image"
-        android:isIndicator="false"
+        android:isIndicator="true"
         android:numStars="5"
-        android:rating="2.0"
         android:stepSize="1.0" />
 
 </RelativeLayout>

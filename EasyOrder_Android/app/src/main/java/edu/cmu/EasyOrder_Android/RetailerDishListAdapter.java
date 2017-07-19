@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -36,12 +37,19 @@ public class RetailerDishListAdapter extends ArrayAdapter<Dish> {
 
         ImageView imageView = (ImageView) v.findViewById(R.id.retailer_dish_image);
         imageView.setImageResource(R.drawable.default_dish_icon);
+
         TextView dishName = (TextView) v.findViewById(R.id.retailer_dish_name);
         dishName.setText(dish.getName());
+
         TextView dishPrice = (TextView) v.findViewById(R.id.retailer_dish_price);
         dishPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(dish.getPrice())).toString());
+
         TextView dishQuantity = (TextView) v.findViewById(R.id.retailer_dish_quantity);
         dishQuantity.setText(String.valueOf(dish.getQuantity()));
+
+        RatingBar ratingBar = (RatingBar) v.findViewById(R.id.retailer_ratingBar);
+        ratingBar.setIsIndicator(true);
+        ratingBar.setRating(dish.getRate());
 
         return v;
     }

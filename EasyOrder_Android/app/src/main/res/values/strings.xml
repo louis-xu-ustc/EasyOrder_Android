@@ -16,4 +16,9 @@
     <string name="switch_no">unpaid</string>
     <string name="first_tag">firstTag</string>
     <string name="second_tag">secondTag</string>
+
+    <string name="dish_name">Dish Name</string>
+    <string name="dish_price">Dish Price</string>
+
+
 </resources>

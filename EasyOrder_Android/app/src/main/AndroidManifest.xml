@@ -3,9 +3,28 @@
     package="edu.cmu.EasyOrder_Android">
 
     <!-- To access Google+ APIs: -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" /> 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <!-- Accessing external storage  hardware --> 
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
+    <!-- Define camera features --> 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" /> 
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" /> 
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" /> 
 
     <application
         android:allowBackup="true"
@@ -46,7 +65,8 @@
             android:label="@string/app_retailer_side"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".RetailerProfileActivity" />
-        <activity android:name=".CustomerProfileActivity"></activity>
+        <activity android:name=".CustomerProfileActivity" />
+        <activity android:name=".RetailerAddPostActivity"></activity>
     </application>
 
 </manifest>

@@ -1,12 +1,16 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -69,7 +73,7 @@ public class RetailerPostFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         dishArrayList = new ArrayList<>();
-        //FIXME
+        //FIXME fetch data from backend database
         fillFakeDishArrayList();
     }
 
@@ -81,13 +85,40 @@ public class RetailerPostFragment extends Fragment {
         mListView = (ListView) rootView.findViewById(R.id.retailer_dish_list);
         dishAdapter = new RetailerDishListAdapter(getContext(), R.layout.retailer_dish_list_view, dishArrayList);
         mListView.setAdapter(dishAdapter);
+
+        mListView.setOnItemLongClickListener(
+                new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                        Toast.makeText(getContext(), "click item, id: " + String.valueOf(id) + " pos: " +
+                                String.valueOf(position), Toast.LENGTH_LONG).show();
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setCancelable(true);
+                        builder.setTitle("Delete Dish Confirm:");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int which) {
+                                // How to remove the selected item?
+                                Dish dish = (Dish) dishAdapter.getItem(position);
+                                dishAdapter.remove(dish);
+                                dishAdapter.notifyDataSetChanged();
+                            }
+                        });
+                        builder.show();
+                        return true;
+                    }
+                });
+
         ImageButton postMoreDishButton = (ImageButton) rootView.findViewById(R.id.retailer_post_dish_button);
         postMoreDishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO add action to post more dish
-                Toast.makeText(getActivity(), "Further operation to post one more dish!",
-                        Toast.LENGTH_LONG).show();
+//                //TODO add action to post more dish
+//                Toast.makeText(getActivity(), "Further operation to post one more dish!",
+//                        Toast.LENGTH_LONG).show();
+                Intent addDishPostIntent = new Intent(getContext(), RetailerAddPostActivity.class);
+                startActivity(addDishPostIntent);
             }
         });
         return rootView;
