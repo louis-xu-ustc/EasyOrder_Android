@@ -90,19 +90,27 @@ public class RetailerPostFragment extends Fragment {
                 new AdapterView.OnItemLongClickListener() {
                     @Override
                     public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                        Toast.makeText(getContext(), "click item, id: " + String.valueOf(id) + " pos: " +
-                                String.valueOf(position), Toast.LENGTH_LONG).show();
+//                        Toast.makeText(getContext(), "click item, id: " + String.valueOf(id) + " pos: " +
+//                                String.valueOf(position), Toast.LENGTH_LONG).show();
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                         builder.setCancelable(true);
-                        builder.setTitle("Delete Dish Confirm:");
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        builder.setTitle("Delete Dish ?");
+                        builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int which) {
                                 // How to remove the selected item?
                                 Dish dish = (Dish) dishAdapter.getItem(position);
                                 dishAdapter.remove(dish);
                                 dishAdapter.notifyDataSetChanged();
+                                //TODO
+                                Toast.makeText(getContext(), "Further backend operations to handle delete post!", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
                             }
                         });
                         builder.show();

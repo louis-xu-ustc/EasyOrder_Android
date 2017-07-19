@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -46,13 +48,13 @@ public class CustomerDishListAdapter extends ArrayAdapter<Dish> {
         dishPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(dish.getPrice())).toString());
         final TextView dishQuantity = (TextView) view.findViewById(R.id.customer_dish_quantity);
         dishQuantity.setText(String.valueOf(dish.getQuantity()));
+
         // add one more dish
         Button addButton = (Button) view.findViewById(R.id.customer_dish_add_button);
         addButton.setTag(dishQuantity);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // FIXME change to the biggest allowed number get from backend
                 if (dish.getQuantity() < Integer.MAX_VALUE) {
                     dish.setQuantity(dish.getQuantity() + 1);
                 }
@@ -60,6 +62,7 @@ public class CustomerDishListAdapter extends ArrayAdapter<Dish> {
                 localDishQuantity.setText(String.valueOf(dish.getQuantity()));
             }
         });
+
         // minus one dish
         Button minusButton = (Button) view.findViewById(R.id.customer_dish_minus_button);
         minusButton.setTag(dishQuantity);
@@ -71,6 +74,18 @@ public class CustomerDishListAdapter extends ArrayAdapter<Dish> {
                 }
                 TextView localDishQuantity = (TextView) v.getTag();
                 localDishQuantity.setText(String.valueOf(dish.getQuantity()));
+            }
+        });
+
+        // rating bar
+        final RatingBar ratingBar = (RatingBar) view.findViewById(R.id.customer_ratingBar);
+        ratingBar.setIsIndicator(false);
+        ratingBar.setRating(dish.getRate());
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                // TODO
+                Toast.makeText(getContext(), "Further backend operations for curr rating: " + rating, Toast.LENGTH_SHORT).show();
             }
         });
 

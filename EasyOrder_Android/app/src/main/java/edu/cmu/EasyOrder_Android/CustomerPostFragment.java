@@ -109,16 +109,20 @@ public class CustomerPostFragment extends Fragment {
                     ((ViewGroup) vv.getParent()).removeView(vv);
                 }
                 builder.setView(vv);
-                builder.setTitle("Order Confirm:");
+                builder.setTitle("Order Detail:");
                 ListView lv = (ListView) v.getTag(R.string.second_tag);
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, dishInfo);
                 lv.setAdapter(adapter);
                 builder.setCancelable(false);
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //TODO save to backend database
-                        Toast.makeText(getActivity(), "Further operation to save to backend database!",
+                        Toast.makeText(getActivity(), "Further operations to save to backend database!",
                                 Toast.LENGTH_LONG).show();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
                     }
                 });
                 AlertDialog alert = builder.create();

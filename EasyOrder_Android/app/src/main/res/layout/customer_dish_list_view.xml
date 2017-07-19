@@ -41,6 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_below="@+id/customer_dish_price"
+        android:layout_marginTop="5dp"
         android:layout_toEndOf="@+id/customer_dish_image"
         android:orientation="horizontal">
 
@@ -76,15 +77,15 @@
     </LinearLayout>
 
     <RatingBar
-        android:id="@+id/retailer_ratingBar"
+        android:id="@+id/customer_ratingBar"
         style="?android:attr/ratingBarStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/dish_action_bar"
+        android:layout_marginTop="8dp"
         android:layout_toEndOf="@+id/customer_dish_image"
         android:isIndicator="false"
         android:numStars="5"
-        android:rating="2.0"
         android:stepSize="1.0" />
 
 </RelativeLayout>

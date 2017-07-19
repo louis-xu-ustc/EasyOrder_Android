@@ -8,8 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -71,6 +73,7 @@ public class CustomerPaymentFragment extends Fragment {
 
         order = new Order();
         dishArrayList = new ArrayList<>();
+        // TODO replace with backend API
         fillFakeOrderDetail();
     }
 
@@ -85,6 +88,16 @@ public class CustomerPaymentFragment extends Fragment {
         totalPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(order.getTotalPrice())).toString());
         dishAdapter = new CustomerOrderDetailAdapter(getContext(), R.layout.customer_order_detail_list_view, dishArrayList);
         mListView.setAdapter(dishAdapter);
+
+        Button customerPayButton = (Button) rootView.findViewById(R.id.customer_pay_button);
+        customerPayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO
+                Toast.makeText(getContext(), "Further backend and payment API operations", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return rootView;
     }
 
