@@ -12,6 +12,10 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -73,13 +77,16 @@ public class RetailerMapFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    public static final int DISPLAY_UI_TOAST = 0;
+    public static final int DISPLAY_UI_DIALOG = 1;
 
+    private OnFragmentInteractionListener mListener;
     private LocationManager locationManager;
     private Location curLocation;
     private MapView mMapView;
     private GoogleMap googleMap;
     private EditText mQuery;
+    private UIHandler uiHandler;
 
     private ArrayAdapter<Address> mAdapter;
     private LatLng targetLatLng;
@@ -123,7 +130,7 @@ public class RetailerMapFragment extends Fragment {
 
         // Initialize Google Map
         locationManager =
-                (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         mMapView = (MapView) v.findViewById(R.id.retailer_mapView);
         mMapView.onCreate(savedInstanceState);
@@ -219,6 +226,9 @@ public class RetailerMapFragment extends Fragment {
         @Override
         protected List<Address> doInBackground(String... params) {
             Geocoder geoCoder = new Geocoder(getActivity(), Locale.getDefault());
+            HandlerThread uiThread = new HandlerThread("UIHandler");
+            uiThread.start();
+            uiHandler = new UIHandler(uiThread.getLooper());
 
             try {
                 List<Address> addresses = geoCoder.getFromLocationName(params[0], 5);
@@ -226,12 +236,14 @@ public class RetailerMapFragment extends Fragment {
                     return addresses;
                 } else {
                     Log.d("SearchLocation", "Cannot get address from search query");
-                    Toast.makeText(getActivity(), "No mapped search address found", Toast.LENGTH_SHORT).show();
+                    String msg = "No mapped search address found!";
+                    handleUIRequest(DISPLAY_UI_TOAST, msg);
                     return null;
                 }
             } catch (IOException eIO) {
                 Log.d("SearchLocation", "Cannot get address from search query");
-                Toast.makeText(getActivity(), "No mapped search address found", Toast.LENGTH_SHORT).show();
+                String msg = "No mapped search address found!";
+                handleUIRequest(DISPLAY_UI_TOAST, msg);
                 return null;
             }
         }
@@ -330,15 +342,15 @@ public class RetailerMapFragment extends Fragment {
                 if (routes.length() == 0) {
                     return;
                 }
-                JSONArray legs = ((JSONObject)routes.get(0)).getJSONArray("legs");
-                driveDistance = ((JSONObject)legs.get(0)).getJSONObject("distance").getInt("value");
+                JSONArray legs = ((JSONObject) routes.get(0)).getJSONArray("legs");
+                driveDistance = ((JSONObject) legs.get(0)).getJSONObject("distance").getInt("value");
             } catch (JSONException eJson) {
                 return;
             }
 
             // calculate duration with assumption of driving at 40 miles/hr
-            double driveHours = (double)driveDistance / 1609.344 / 40;
-            String eta = String.format("%d Hr %d Min", (int)driveHours, (int)((driveHours - (int)driveHours) * 60));
+            double driveHours = (double) driveDistance / 1609.344 / 40;
+            String eta = String.format("%d Hr %d Min", (int) driveHours, (int) ((driveHours - (int) driveHours) * 60));
             float[] distance = new float[1];
             Location.distanceBetween(curLocation.getLatitude(), curLocation.getLongitude(),
                     targetLatLng.latitude, targetLatLng.longitude, distance);
@@ -368,12 +380,12 @@ public class RetailerMapFragment extends Fragment {
         // urlConnection.connect();
         int a = urlConnection.getResponseCode();
 
-        BufferedReader br=new BufferedReader(new InputStreamReader(url.openStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = br.readLine()) != null) {
-            sb.append(line+"\n");
+            sb.append(line + "\n");
         }
         br.close();
 
@@ -399,7 +411,7 @@ public class RetailerMapFragment extends Fragment {
     private void askPermission() {
         Log.d(DBG, "askPermission()");
         ActivityCompat.requestPermissions(
-               getActivity(),
+                getActivity(),
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_PERMISSIONS_REQUEST_CODE
         );
@@ -420,5 +432,44 @@ public class RetailerMapFragment extends Fragment {
                 break;
             }
         }
+    }
+
+    private final class UIHandler extends Handler {
+
+        public UIHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case DISPLAY_UI_TOAST: {
+                    Context context = getContext();
+                    Toast t = Toast.makeText(context, (String) msg.obj, Toast.LENGTH_LONG);
+                    t.show();
+                }
+                break;
+                case DISPLAY_UI_DIALOG:
+                    android.support.v7.app.AlertDialog alertDialog = new android.support.v7.app.AlertDialog.Builder(getActivity()).create();
+                    alertDialog.setTitle("You are not granted!");
+                    alertDialog.setMessage("Please login in to Twitter first!");
+                    alertDialog.setButton(android.support.v7.app.AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    protected void handleUIRequest(int id, String message) {
+        Message msg = uiHandler.obtainMessage(id);
+        msg.obj = message;
+        uiHandler.sendMessage(msg);
     }
 }
