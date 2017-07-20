@@ -2,7 +2,6 @@ package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,13 +21,9 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
-import static edu.cmu.EasyOrder_Android.Utils.DBG;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 /**
  * Created by yunpengx on 7/8/17.
@@ -119,7 +114,7 @@ public class CustomerDishListAdapter extends ArrayAdapter<Dish> {
     private void postRate(float rating, Dish dish) {
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        Long id = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
         String twitterID = id.toString();
 
         int dishID = dish.getId();

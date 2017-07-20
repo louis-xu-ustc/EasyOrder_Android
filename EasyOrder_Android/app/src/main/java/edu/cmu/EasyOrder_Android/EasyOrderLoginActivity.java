@@ -17,27 +17,29 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
-
-import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
-import twitter4j.conf.ConfigurationBuilder;
 
-import static edu.cmu.EasyOrder_Android.Utils.DBG;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_ACCESS_TOKEN;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_ACCESS_TOKEN_SECRET;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_IMAGE_URL;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_NAME;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_SCREEN_NAME;
+import static edu.cmu.EasyOrder_Android.Utils.TAG;
+import static edu.cmu.EasyOrder_Android.Utils.TWITTER_CONSUMER_KEY;
+import static edu.cmu.EasyOrder_Android.Utils.TWITTER_CONSUMER_SECRET;
 
 /**
  * Created by yunpengx on 7/8/17.
@@ -45,17 +47,6 @@ import static edu.cmu.EasyOrder_Android.Utils.DBG;
 
 public class EasyOrderLoginActivity extends Activity {
 
-    private static final String TWITTER_CONSUMER_KEY = BuildConfig.CONSUMER_KEY;
-    private static final String TWITTER_CONSUMER_SECRET = BuildConfig.CONSUMER_SECRET;
-    private static final String TWITTER_ACCESS_TOKEN = BuildConfig.ACCESS_TOKEN;
-    private static final String TWITTER_ACCESS_TOKEN_SECRET = BuildConfig.ACCESS_TOKEN_SECRET;
-
-    private static final String TAG = "DBG";
-    public static String PREFERENCE_TWITTER_LOGGED_IN = "TWITTER_LOGGED_IN";
-    public static String TWITTER_USER_ID = "ID";
-    public static String TWITTER_USER_NAME = "NAME";
-    public static String TWITTER_USER_SCREEN_NAME = "SCREEN_NAME";
-    public static String TWITTER_USER_IMAGE_URL = "IMAGE_URL";
 
     private Dialog auth_dialog;
     private WebView web;
@@ -182,15 +173,15 @@ public class EasyOrderLoginActivity extends Activity {
             try {
                 accessToken = twitter.getOAuthAccessToken(requestToken, oauth_verifier);
                 SharedPreferences.Editor edit = pref.edit();
-                edit.putString("ACCESS_TOKEN", accessToken.getToken());
-                edit.putString("ACCESS_TOKEN_SECRET", accessToken.getTokenSecret());
+                edit.putString(PREFERENCE_TWITTER_ACCESS_TOKEN, accessToken.getToken());
+                edit.putString(PREFERENCE_TWITTER_ACCESS_TOKEN_SECRET, accessToken.getTokenSecret());
                 edit.putBoolean(PREFERENCE_TWITTER_LOGGED_IN, true);
 
                 User user = twitter.showUser(accessToken.getUserId());
-                edit.putLong(TWITTER_USER_ID, user.getId());
-                edit.putString(TWITTER_USER_NAME, user.getName());
-                edit.putString(TWITTER_USER_SCREEN_NAME, user.getScreenName());
-                edit.putString(TWITTER_USER_IMAGE_URL, user.getOriginalProfileImageURL());
+                edit.putLong(PREFERENCE_TWITTER_USER_ID, user.getId());
+                edit.putString(PREFERENCE_TWITTER_USER_NAME, user.getName());
+                edit.putString(PREFERENCE_TWITTER_USER_SCREEN_NAME, user.getScreenName());
+                edit.putString(PREFERENCE_TWITTER_USER_IMAGE_URL, user.getOriginalProfileImageURL());
                 edit.commit();
             } catch (TwitterException e) {
                 // TODO Auto-generated catch block
@@ -210,10 +201,10 @@ public class EasyOrderLoginActivity extends Activity {
     }
 
     private void loginInEasyOrder() {
-        Long userID = pref.getLong(TWITTER_USER_ID, 0);
-        String userName = pref.getString(TWITTER_USER_NAME, "");
-        String userScreenName = pref.getString(TWITTER_USER_SCREEN_NAME, "");
-        String userImage = pref.getString(TWITTER_USER_IMAGE_URL, "");
+        Long userID = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
+        String userName = pref.getString(PREFERENCE_TWITTER_USER_NAME, "");
+        String userScreenName = pref.getString(PREFERENCE_TWITTER_USER_SCREEN_NAME, "");
+        String userImage = pref.getString(PREFERENCE_TWITTER_USER_IMAGE_URL, "");
 
 
         if (isRetailerLoginButtonClicked) {
@@ -247,7 +238,8 @@ public class EasyOrderLoginActivity extends Activity {
 
             createUserInServer(userID, userName);
 
-            Toast.makeText(this.getApplicationContext(), "customer login successful, \n" +
+            Toast.makeText(this.getApplicationContext(), "customer login successful, further operations\n" +
+                    "user ID: " + userID + "\n" +
                     "user name: " + userName + "\n" +
                     "screen name: " + userScreenName, Toast.LENGTH_LONG).show();
 

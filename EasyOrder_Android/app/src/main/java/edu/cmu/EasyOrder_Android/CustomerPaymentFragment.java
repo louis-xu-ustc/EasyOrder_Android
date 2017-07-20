@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -15,7 +14,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -27,7 +25,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 
 /**
@@ -179,7 +177,7 @@ public class CustomerPaymentFragment extends Fragment {
         };
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        Long id = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
         String twitterID = id.toString();
         RESTAPI.getInstance(getActivity().getApplicationContext())
                 .makeRequest(Utils.API_BASE + "/order/user/" + twitterID + "/",

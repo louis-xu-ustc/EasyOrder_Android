@@ -133,7 +133,7 @@ public class RetailerPaymentFragment extends Fragment {
 
     private void fillFakeOrderArrayList() {
         Order order1 = new Order();
-        order1.setUserName("Yangjie Jie");
+        order1.setUserName("JiaJie Yang");
         order1.setIfNotify(true);
         orderArrayList.add(order1);
 

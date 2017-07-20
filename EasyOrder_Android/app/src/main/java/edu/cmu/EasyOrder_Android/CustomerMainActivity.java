@@ -4,16 +4,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,7 +29,7 @@ import com.braintreepayments.api.dropin.DropInResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 public class CustomerMainActivity extends AppCompatActivity implements
         CustomerMapFragment.OnFragmentInteractionListener,
@@ -91,7 +90,7 @@ public class CustomerMainActivity extends AppCompatActivity implements
 
     private void postPaymentNonce(String nonce) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        Long id = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
         String twitterID = id.toString();
 
         JSONObject input = new JSONObject();
@@ -126,7 +125,7 @@ public class CustomerMainActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_easy_order_main, menu);
+        getMenuInflater().inflate(R.menu.menu_customer_main, menu);
         return true;
     }
 
@@ -137,18 +136,21 @@ public class CustomerMainActivity extends AppCompatActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-
-        if (id == R.id.customer_profile_button) {
-            Intent customerProfile = new Intent(CustomerMainActivity.this, CustomerProfileActivity.class);
-            startActivity(customerProfile);
-            return true;
+        switch (id) {
+            case R.id.customer_setting_profile_button:
+                Intent customerProfile = new Intent(CustomerMainActivity.this, CustomerProfileActivity.class);
+                startActivity(customerProfile);
+                finish();
+                return true;
+            case R.id.customer_setting_logout_button:
+                // TODO
+                Toast.makeText(CustomerMainActivity.this, "Log out of customer account, " +
+                        "further operations to handle authentication data", Toast.LENGTH_SHORT).show();
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**

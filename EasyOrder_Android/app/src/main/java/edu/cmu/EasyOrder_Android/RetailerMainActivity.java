@@ -2,24 +2,20 @@ package edu.cmu.EasyOrder_Android;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
-import android.widget.TextView;
+import android.widget.Toast;
 
 public class RetailerMainActivity extends AppCompatActivity implements
         RetailerPostFragment.OnFragmentInteractionListener,
@@ -58,15 +54,6 @@ public class RetailerMainActivity extends AppCompatActivity implements
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
     }
 
     @Override
@@ -87,18 +74,20 @@ public class RetailerMainActivity extends AppCompatActivity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
+        switch (id) {
+            case R.id.retailer_setting_profile_button:
+                Intent retailerProfile = new Intent(RetailerMainActivity.this, RetailerProfileActivity.class);
+                startActivity(retailerProfile);
 
-        if (id == R.id.retailer_profile_button) {
-            Intent retailerProfile = new Intent(RetailerMainActivity.this, RetailerProfileActivity.class);
-            startActivity(retailerProfile);
-            return true;
+                return true;
+            case R.id.retailer_setting_logout_button:
+                // TODO
+                Toast.makeText(RetailerMainActivity.this, "Log out of retailer account, further operations to handle authentication data", Toast.LENGTH_SHORT).show();
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**
