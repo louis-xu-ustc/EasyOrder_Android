@@ -43,6 +43,7 @@ public class EasyOrderLoginActivity extends Activity {
 
     private static final String TAG = "DBG";
     public static String PREFERENCE_TWITTER_LOGGED_IN = "TWITTER_LOGGED_IN";
+    public static String TWITTER_USER_ID = "ID";
     public static String TWITTER_USER_NAME = "NAME";
     public static String TWITTER_USER_SCREEN_NAME = "SCREEN_NAME";
     public static String TWITTER_USER_IMAGE_URL = "IMAGE_URL";
@@ -177,6 +178,7 @@ public class EasyOrderLoginActivity extends Activity {
                 edit.putBoolean(PREFERENCE_TWITTER_LOGGED_IN, true);
 
                 User user = twitter.showUser(accessToken.getUserId());
+                edit.putLong(TWITTER_USER_ID, user.getId());
                 edit.putString(TWITTER_USER_NAME, user.getName());
                 edit.putString(TWITTER_USER_SCREEN_NAME, user.getScreenName());
                 edit.putString(TWITTER_USER_IMAGE_URL, user.getOriginalProfileImageURL());
@@ -199,6 +201,7 @@ public class EasyOrderLoginActivity extends Activity {
     }
 
     private void loginInEasyOrder() {
+        Long userID = pref.getLong(TWITTER_USER_ID, 0);
         String userName = pref.getString(TWITTER_USER_NAME, "");
         String userScreenName = pref.getString(TWITTER_USER_SCREEN_NAME, "");
         String userImage = pref.getString(TWITTER_USER_IMAGE_URL, "");
@@ -208,6 +211,7 @@ public class EasyOrderLoginActivity extends Activity {
             isRetailerLoginButtonClicked = false;
             //TODO
             Toast.makeText(this.getApplicationContext(), "retailer login successful, further operations\n" +
+                    "user ID: " + userID + "\n" +
                     "user name: " + userName + "\n" +
                     "screen name: " + userScreenName, Toast.LENGTH_LONG).show();
 
@@ -231,6 +235,7 @@ public class EasyOrderLoginActivity extends Activity {
             isCustomerLoginButtonClicked = false;
             //TODO
             Toast.makeText(this.getApplicationContext(), "customer login successful, further operations\n" +
+                    "user ID: " + userID + "\n" +
                     "user name: " + userName + "\n" +
                     "screen name: " + userScreenName, Toast.LENGTH_LONG).show();
 
