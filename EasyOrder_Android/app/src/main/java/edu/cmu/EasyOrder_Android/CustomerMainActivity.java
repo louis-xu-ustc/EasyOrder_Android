@@ -1,7 +1,10 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -11,11 +14,23 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.braintreepayments.api.dropin.DropInActivity;
+import com.braintreepayments.api.dropin.DropInResult;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
 
 public class CustomerMainActivity extends AppCompatActivity implements
         CustomerMapFragment.OnFragmentInteractionListener,
@@ -55,14 +70,52 @@ public class CustomerMainActivity extends AppCompatActivity implements
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Utils.REQUEST_PAYMENT_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
+                postPaymentNonce(result.getPaymentMethodNonce().getNonce());
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // the user canceled
+                Toast.makeText(getApplicationContext(), "User Cancelled Transaction", Toast.LENGTH_SHORT).show();
+            } else {
+                // handle errors here, an exception may be available in
+                Exception error = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
+                Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void postPaymentNonce(String nonce) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        String twitterID = id.toString();
+
+        JSONObject input = new JSONObject();
+        try {
+            input.put("user_id", twitterID);
+            input.put("payment_method_nonce", nonce);
+        } catch (JSONException eJson) {
+            Log.d("Post Payment Nonce", "Json input parse error");
+        }
+
+        Response.Listener<JSONObject> checkoutCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(getApplicationContext(), "Payment Succeeded", Toast.LENGTH_SHORT).show();
+                // TODO: Disable Pay Button or change UI to end all transaction
+            }
+        };
+
+        RESTAPI.getInstance(getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/payment/checkout/",
+                        Request.Method.POST,
+                        input,
+                        checkoutCallback,
+                        null);
     }
 
     @Override

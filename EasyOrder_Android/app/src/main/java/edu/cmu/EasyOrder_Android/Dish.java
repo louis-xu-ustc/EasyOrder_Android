@@ -7,9 +7,19 @@ package edu.cmu.EasyOrder_Android;
 public class Dish {
     private String name;
     private String image;
-    private int price;
+    private double price;
     private int quantity;
-    private int rate;
+    private double rate;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    private int id;
 
     public String getName() {
         return this.name;
@@ -27,11 +37,11 @@ public class Dish {
         this.image = image;
     }
 
-    public int getPrice() {
+    public double getPrice() {
         return this.price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 
@@ -43,15 +53,15 @@ public class Dish {
         this.quantity = quantity;
     }
 
-    public int getRate() {
+    public double getRate() {
         return this.rate;
     }
 
-    public void setRate(int rate) {
+    public void setRate(double rate) {
         this.rate = rate;
     }
 
-    public int getTotalPrice() {
+    public double getTotalPrice() {
         return this.price * this.quantity;
     }
 

@@ -17,6 +17,15 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 import twitter4j.Status;
@@ -209,7 +218,9 @@ public class EasyOrderLoginActivity extends Activity {
 
         if (isRetailerLoginButtonClicked) {
             isRetailerLoginButtonClicked = false;
-            //TODO
+
+            createUserInServer(userID, userName);
+
             Toast.makeText(this.getApplicationContext(), "retailer login successful, further operations\n" +
                     "user ID: " + userID + "\n" +
                     "user name: " + userName + "\n" +
@@ -233,9 +244,10 @@ public class EasyOrderLoginActivity extends Activity {
 
         if (isCustomerLoginButtonClicked) {
             isCustomerLoginButtonClicked = false;
-            //TODO
-            Toast.makeText(this.getApplicationContext(), "customer login successful, further operations\n" +
-                    "user ID: " + userID + "\n" +
+
+            createUserInServer(userID, userName);
+
+            Toast.makeText(this.getApplicationContext(), "customer login successful, \n" +
                     "user name: " + userName + "\n" +
                     "screen name: " + userScreenName, Toast.LENGTH_LONG).show();
 
@@ -254,5 +266,31 @@ public class EasyOrderLoginActivity extends Activity {
             };
             thread.start();
         }
+    }
+
+    private void createUserInServer(Long userID, String name) {
+
+        JSONObject user = new JSONObject();
+        try {
+            user.put("twitterID", userID.toString());
+            user.put("name", name);
+        } catch (JSONException eJson) {
+            Log.d("Login Activity", "JSON Add data Error");
+            return;
+        }
+
+        Response.Listener<JSONObject> orderCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                // Do Nothing
+            }
+        };
+
+        RESTAPI.getInstance(getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/user/",
+                        Request.Method.POST,
+                        user,
+                        orderCallback,
+                        null);
     }
 }

@@ -49,7 +49,7 @@ public class RetailerDishListAdapter extends ArrayAdapter<Dish> {
 
         RatingBar ratingBar = (RatingBar) v.findViewById(R.id.retailer_ratingBar);
         ratingBar.setIsIndicator(true);
-        ratingBar.setRating(dish.getRate());
+        ratingBar.setRating((float)dish.getRate());
 
         return v;
     }

@@ -2,8 +2,10 @@ package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -15,8 +17,17 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
+import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
 import static edu.cmu.EasyOrder_Android.Utils.DBG;
 
 
@@ -29,12 +40,10 @@ import static edu.cmu.EasyOrder_Android.Utils.DBG;
  * create an instance of this fragment.
  */
 public class CustomerPostFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -56,7 +65,6 @@ public class CustomerPostFragment extends Fragment {
      * @param param2 Parameter 2.
      * @return A new instance of fragment CustomerPostFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static CustomerPostFragment newInstance(String param1, String param2) {
         CustomerPostFragment fragment = new CustomerPostFragment();
         Bundle args = new Bundle();
@@ -74,8 +82,7 @@ public class CustomerPostFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         dishArrayList = new ArrayList<>();
-        //FIXME
-        fillFakeDishArrayList();
+        fetchDishInfo();
     }
 
     @Override
@@ -133,7 +140,6 @@ public class CustomerPostFragment extends Fragment {
         return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
@@ -168,36 +174,37 @@ public class CustomerPostFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 
-    private void fillFakeDishArrayList() {
-        Dish dish1 = new Dish();
-        dish1.setName("pizza");
-        dish1.setPrice(10);
-        //FIXME
-//        dish1.setImage(ContextCompat.getDrawable(getContext(),R.drawable.pizza).toString());
-        dish1.setQuantity(1);
-        dish1.setRate(3);
-        dishArrayList.add(dish1);
+    private void fetchDishInfo() {
+        Response.Listener<JSONArray> orderCallback = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    dishArrayList.clear();
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject curDish = (JSONObject) response.get(i);
+                        Dish dish = new Dish();
+                        dish.setName(curDish.getString("name"));
+                        dish.setPrice(curDish.getDouble("price"));
+                        dish.setRate(curDish.getDouble("rate"));
+                        dish.setImage(curDish.getString("photo"));
+                        dish.setId(curDish.getInt("id"));
+                        dishArrayList.add(dish);
+                    }
+                    dishAdapter.notifyDataSetChanged();
+                } catch (JSONException eJson) {
+                    Log.d("Customer Tab 3", eJson.getMessage());
+                }
+            }
+        };
 
-        Dish dish2 = new Dish();
-        dish2.setName("salad");
-        dish2.setPrice(12);
-        // FIXME
-//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
-        dish2.setQuantity(0);
-        dish2.setRate(4);
-        dishArrayList.add(dish2);
-
-        Dish dish3 = new Dish();
-        dish3.setName("fish & chips");
-        dish3.setPrice(0);
-        // FIXME
-//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
-        dish3.setQuantity(0);
-        dish3.setRate(2);
-        dishArrayList.add(dish3);
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/dish/",
+                        Request.Method.GET,
+                        null,
+                        orderCallback,
+                        null);
     }
 }
