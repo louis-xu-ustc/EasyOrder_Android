@@ -1,11 +1,26 @@
 package edu.cmu.EasyOrder_Android;
 
-import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+
+import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
+import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_IMAGE_URL;
 
 public class CustomerProfileActivity extends AppCompatActivity {
 
@@ -18,40 +33,60 @@ public class CustomerProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_profile_view);
         historyOrderArrayList = new ArrayList<>();
-        //FIXME
-        fillFakeHistoryOrderArrayList();
+        fetchOrderDetail();
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String imageURL = pref.getString(TWITTER_USER_IMAGE_URL, "");
+        ImageView mProfileImage = (ImageView) findViewById(R.id.customer_profile_image);
+        try {
+            Picasso.with(getApplicationContext())
+                    .load(imageURL)
+                    .placeholder(R.drawable.default_avartar)
+                    .into(mProfileImage);
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            Log.d("Load Dish Photo", msg);
+        }
 
         mListView = (ListView) findViewById(R.id.customer_history_order);
         historyOrderAdapter = new CustomerHistoryOrderAdapter(getApplicationContext(), R.layout.customer_history_order_view, historyOrderArrayList);
         mListView.setAdapter(historyOrderAdapter);
     }
 
-    private void fillFakeHistoryOrderArrayList() {
-        Dish dish1 = new Dish();
-        dish1.setName("pizza");
-        dish1.setPrice(10);
-        //FIXME
-//        dish1.setImage(ContextCompat.getDrawable(getContext(),R.drawable.pizza).toString());
-        dish1.setQuantity(1);
-        dish1.setRate(3);
-        historyOrderArrayList.add(dish1);
+    private void fetchOrderDetail() {
+        Response.Listener<JSONArray> orderCallback = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    // must use the same dishArrayList, otherwise notifyDatasetChanged cannot be useful
+                    historyOrderArrayList.clear();
 
-        Dish dish2 = new Dish();
-        dish2.setName("salad");
-        dish2.setPrice(12);
-        // FIXME
-//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
-        dish2.setQuantity(0);
-        dish2.setRate(4);
-        historyOrderArrayList.add(dish2);
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject curOrder = (JSONObject) response.get(i);
+                        Dish curDish = new Dish();
+                        curDish.setName(curOrder.getString("dish"));
+                        curDish.setPrice(curOrder.getDouble("price"));
+                        curDish.setQuantity(curOrder.getInt("amount"));
+                        curDish.setImage(curOrder.getString("photo"));
+                        historyOrderArrayList.add(curDish);
+                    }
 
-        Dish dish3 = new Dish();
-        dish3.setName("fish & chips");
-        dish3.setPrice(0);
-        // FIXME
-//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
-        dish3.setQuantity(0);
-        dish3.setRate(2);
-        historyOrderArrayList.add(dish3);
+                    historyOrderAdapter.notifyDataSetChanged();
+                } catch (JSONException eJson) {
+                    Log.d("Customer Profile", eJson.getMessage());
+                }
+            }
+        };
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        String twitterID = id.toString();
+        RESTAPI.getInstance(getApplication().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/order/history/" + twitterID + "/",
+                        Request.Method.GET,
+                        null,
+                        orderCallback,
+                        null);
+
     }
 }

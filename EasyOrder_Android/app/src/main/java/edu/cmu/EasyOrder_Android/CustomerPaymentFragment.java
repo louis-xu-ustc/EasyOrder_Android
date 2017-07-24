@@ -162,7 +162,7 @@ public class CustomerPaymentFragment extends Fragment {
                         JSONObject curOrder = (JSONObject) response.get(i);
                         Dish curDish = new Dish();
                         curDish.setName(curOrder.getString("dish"));
-                        curDish.setPrice((int)curOrder.getDouble("price"));
+                        curDish.setPrice(curOrder.getDouble("price"));
                         curDish.setQuantity(curOrder.getInt("amount"));
                         dishArrayList.add(curDish);
                         order.addDish(curDish);
