@@ -1,9 +1,9 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -19,8 +19,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_ID;
-import static edu.cmu.EasyOrder_Android.EasyOrderLoginActivity.TWITTER_USER_IMAGE_URL;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_IMAGE_URL;
 
 public class CustomerProfileActivity extends AppCompatActivity {
 
@@ -36,7 +36,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
         fetchOrderDetail();
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String imageURL = pref.getString(TWITTER_USER_IMAGE_URL, "");
+        String imageURL = pref.getString(PREFERENCE_TWITTER_USER_IMAGE_URL, "");
         ImageView mProfileImage = (ImageView) findViewById(R.id.customer_profile_image);
         try {
             Picasso.with(getApplicationContext())
@@ -79,7 +79,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
         };
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        Long id = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
         String twitterID = id.toString();
         RESTAPI.getInstance(getApplication().getApplicationContext())
                 .makeRequest(Utils.API_BASE + "/order/history/" + twitterID + "/",

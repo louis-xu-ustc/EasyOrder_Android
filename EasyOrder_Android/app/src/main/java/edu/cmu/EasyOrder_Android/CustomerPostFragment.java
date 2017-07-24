@@ -2,8 +2,10 @@ package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -24,7 +26,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 
 /**
@@ -173,8 +175,8 @@ public class CustomerPostFragment extends Fragment {
 
     private void placeOrder() {
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Long id = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
         String twitterID = id.toString();
 
         JSONObject input = new JSONObject();

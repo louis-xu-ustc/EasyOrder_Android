@@ -1,7 +1,6 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -23,10 +22,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -45,14 +43,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.content.Context.LOCATION_SERVICE;
 import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.ERR;
 import static edu.cmu.EasyOrder_Android.Utils.REQUEST_PERMISSIONS_REQUEST_CODE;
@@ -86,8 +87,11 @@ public class RetailerMapFragment extends Fragment {
     private EditText mQuery;
     private UIHandler uiHandler;
 
-    private ArrayAdapter<Address> mAdapter;
-    private LatLng targetLatLng;
+    private JSONArray resultArray;
+    private int selectedLocationItem = 0;
+    private String addressText;
+    private MarkerOptions targetMarkerOptions;
+    private MarkerOptions currentMarkerOptions;
 
     public RetailerMapFragment() {
         // Required empty public constructor
@@ -128,7 +132,7 @@ public class RetailerMapFragment extends Fragment {
 
         // Initialize Google Map
         locationManager =
-                (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
 
         mMapView = (MapView) v.findViewById(R.id.retailer_mapView);
         mMapView.onCreate(savedInstanceState);
@@ -174,7 +178,21 @@ public class RetailerMapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String query = mQuery.getText().toString();
-                new searchAddress().execute(query);
+                URI uri;
+                if (query != null && !query.equals("")) {
+                    try {
+                        uri = new URI(
+                                "https",
+                                "maps.googleapis.com",
+                                "/maps/api/geocode/json",
+                                "address=" + query + "&sensor=false",
+                                null);
+                        GetLocationDownloadTask getLocation = new GetLocationDownloadTask();
+                        getLocation.execute(uri.toURL());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
 
@@ -220,176 +238,263 @@ public class RetailerMapFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private class searchAddress extends AsyncTask<String, Void, List<Address>> {
+    // The types specified here are the input data type, the progress type, and the result type
+    private class parseLocation extends AsyncTask<Location, Void, String> {
         @Override
-        protected List<Address> doInBackground(String... params) {
-            Geocoder geoCoder = new Geocoder(getActivity(), Locale.getDefault());
-            HandlerThread uiThread = new HandlerThread("UIHandler");
-            uiThread.start();
-            uiHandler = new UIHandler(uiThread.getLooper());
+        protected void onPreExecute() {
+            // Runs on the UI thread before doInBackground
+            // Good for toggling visibility of a progress indicator
+            super.onPreExecute();
+        }
 
+        @Override
+        protected String doInBackground(Location... params) {
+            // Some long-running task like downloading an image.
+            Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+            Location loc = params[0];
+            List<Address> addresses = null;
             try {
-                List<Address> addresses = geoCoder.getFromLocationName(params[0], 5);
-                if (addresses.size() > 0) {
-                    return addresses;
-                } else {
-                    Log.d("SearchLocation", "Cannot get address from search query");
-                    String msg = "No mapped search address found!";
-                    handleUIRequest(DISPLAY_UI_TOAST, msg);
-                    return null;
+                // get just a single address.
+                addresses = geocoder.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
+            } catch (IOException ioException) {
+                // Catch invalid latitude or longitude values.
+                String msg = "IO Exception OR Network Error";
+                Log.d(DBG, msg);
+                return msg;
+            } catch (IllegalArgumentException illegalArgumentException) {
+                // Error message to post in the log
+                return "Invalid_lat_long_used";
+            }
+            Address address = null;
+            String addr = "";
+            String zipcode = "";
+            String city = "";
+            String state = "";
+            if (addresses != null && addresses.size() > 0) {
+                address = addresses.get(0);
+
+                StringBuilder strReturnedAddress = new StringBuilder();
+                Log.d(DBG, "AddressLine: " + address.getMaxAddressLineIndex());
+                for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+                    String line = address.getAddressLine(i);
+                    Log.d(DBG, "line " + i + ": " + line);
+                    if (line != null && !line.isEmpty()) {
+                        strReturnedAddress.append(line);
+                        break;
+                    }
                 }
-            } catch (IOException eIO) {
-                Log.d("SearchLocation", "Cannot get address from search query");
-                String msg = "No mapped search address found!";
+                addr = strReturnedAddress.toString();
+                city = address.getLocality();
+                state = address.getAdminArea();
+                for (int i = 0; i < addresses.size(); i++) {
+                    address = addresses.get(i);
+                    if (address.getPostalCode() != null) {
+                        zipcode = address.getPostalCode();
+                        break;
+                    }
+                }
+
+                Log.d(DBG, "addr: " + addr);
+                Log.d(DBG, "city: " + city);
+                Log.d(DBG, "state: " + state);
+                Log.d(DBG, "zipcode: " + zipcode);
+                addressText = String.format("%s, %s, %s, %s ", addr, city, state, zipcode);
+                // Return the text
+                return addressText;
+            } else {
+                return "No_address_found";
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+        }
+    }
+
+    private class GetLocationDownloadTask extends AsyncTask<URL, Void, String> {
+
+        @Override
+        protected String doInBackground(URL... urls) {
+            String result = "";
+            URL url;
+            HttpURLConnection urlConnection;
+            try {
+                url = urls[0];
+                Log.d(DBG, "url: " + url);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                InputStream is = urlConnection.getInputStream();
+                InputStreamReader inputStreamReader = new InputStreamReader(is);
+
+                int data = inputStreamReader.read();
+                while (data != -1) {
+                    char curr = (char) data;
+                    result += curr;
+                    data = inputStreamReader.read();
+                }
+                return result;
+
+            } catch (IOException ioException) {
+                HandlerThread uiThread = new HandlerThread("UIHandler");
+                uiThread.start();
+                uiHandler = new UIHandler(uiThread.getLooper());
+                String msg = "IO Exception or Network Error!";
                 handleUIRequest(DISPLAY_UI_TOAST, msg);
-                return null;
+            } catch (IllegalArgumentException illegalArgumentException) {
+                HandlerThread uiThread = new HandlerThread("UIHandler");
+                uiThread.start();
+                uiHandler = new UIHandler(uiThread.getLooper());
+                String msg = "Invalid argument used";
+                handleUIRequest(DISPLAY_UI_TOAST, msg);
             }
+            return null;
         }
 
         @Override
-        protected void onPostExecute(List<Address> addresses) {
-            mAdapter = new ArrayAdapter<Address>(getContext(),
-                    android.R.layout.simple_list_item_1, android.R.id.text1, addresses) {
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent) {
-                    TextView textView = (TextView) super.getView(position, convertView, parent);
-                    Address address = getItem(position);
-                    String formattedAddr = String.format("%s, %s, %s ",
-                            address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "", address.getLocality(),
-                            address.getCountryName());
-                    textView.setText(formattedAddr);
-                    return textView;
-                }
-            };
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle("Choose Location")
-                    .setAdapter(mAdapter, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            // place marker for target location
-                            Address selectedAddr = mAdapter.getItem(which);
-                            targetLatLng = new LatLng(selectedAddr.getLatitude(), selectedAddr.getLongitude());
-                            // CameraPosition cameraPosition = new CameraPosition.Builder().target(curLatLng).zoom(12).build();
-                            // googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-                            googleMap.clear();
-                            String formattedAddr = String.format("%s, %s",
-                                    selectedAddr.getMaxAddressLineIndex() > 0 ? selectedAddr.getAddressLine(0) : "", selectedAddr.getLocality());
-                            MarkerOptions targetMarker = new MarkerOptions().title(formattedAddr).position(targetLatLng).icon(BitmapDescriptorFactory
-                                    .defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                            googleMap.addMarker(targetMarker);
-
-                            // place marker for current location
-                            // Check Access Location Permission
-                            if (ActivityCompat.checkSelfPermission(getActivity(),
-                                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                                Log.d("Second View", "Location Permission Not Granted");
-                                return;
-                            }
-
-                            curLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (curLocation == null) {
-                                Log.d("Second View", "GPS Service Available");
-                                return;
-                            }
-
-                            String QueryString = String.format("https://maps.googleapis.com/maps/api/directions/json?origin=%f,%f&destination=%f,%f&key=%s",
-                                    curLocation.getLatitude(), curLocation.getLongitude(),
-                                    targetLatLng.latitude, targetLatLng.longitude,
-                                    getActivity().getString(R.string.google_maps_key));
-
-                            new searchETA().execute(QueryString);
-
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            showDialog(result);
         }
     }
 
-    private class searchETA extends AsyncTask<String, Void, JSONObject> {
-        @Override
-        protected JSONObject doInBackground(String... params) {
-
-            JSONObject etaJson;
+    private void showDialog(String result) {
+        List<String> resultList = new ArrayList<>();
+        if (result != null) {
             try {
-                etaJson = getJSONObjectFromURL(params[0]);
+                JSONObject locationObject = new JSONObject(result);
+                resultArray = locationObject.getJSONArray("results");
 
-            } catch (IOException eIO) {
-                Log.d("Second View", "Search ETA IO Error");
-                return null;
-            } catch (JSONException eJson) {
-                Log.d("Second View", "Search ETA return value not Json");
-                return null;
-            }
-
-            return etaJson;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject jsonObject) {
-            if (jsonObject == null) {
-                Log.d("Second View", "Search ETA no value returned");
-                return;
-            }
-
-            int driveDistance = 0;
-            try {
-                JSONArray routes = jsonObject.getJSONArray("routes");
-                if (routes.length() == 0) {
-                    return;
+                for (int i = 0; i < resultArray.length(); i++) {
+                    JSONObject res = resultArray.getJSONObject(i);
+                    resultList.add(res.getString("formatted_address"));
                 }
-                JSONArray legs = ((JSONObject) routes.get(0)).getJSONArray("legs");
-                driveDistance = ((JSONObject) legs.get(0)).getJSONObject("distance").getInt("value");
-            } catch (JSONException eJson) {
-                return;
+
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-
-            // calculate duration with assumption of driving at 40 miles/hr
-            double driveHours = (double) driveDistance / 1609.344 / 40;
-            String eta = String.format("%d Hr %d Min", (int) driveHours, (int) ((driveHours - (int) driveHours) * 60));
-            float[] distance = new float[1];
-            Location.distanceBetween(curLocation.getLatitude(), curLocation.getLongitude(),
-                    targetLatLng.latitude, targetLatLng.longitude, distance);
-
-            // place marker for current location
-            String curMarkerTitle = String.format("%.2f miles - %s", distance[0] / 1609.344, eta);
-            LatLng curLatLng = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
-            MarkerOptions curMarker = new MarkerOptions().title(curMarkerTitle).position(curLatLng).icon(BitmapDescriptorFactory
-                    .defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-            googleMap.addMarker(curMarker);
-
-            // move and zoom google map to show all markers
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(curLatLng);
-            builder.include(targetLatLng);
-            LatLngBounds bounds = builder.build();
-            int padding = 300; // offset from edges of the map in pixels
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            googleMap.animateCamera(cu);
+        } else {
+            Toast.makeText(getContext(), "no valid address found!", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        final CharSequence[] items = resultList.toArray(new CharSequence[resultList.size()]);
+
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getActivity());
+        builder.setTitle("Select Location:");
+        builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(getContext(), "selected item: " + items[which], Toast.LENGTH_SHORT).show();
+                ListView lv = ((android.support.v7.app.AlertDialog) dialog).getListView();
+                lv.setTag(new Integer(which));
+            }
+        });
+
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                ListView lv = ((android.support.v7.app.AlertDialog) dialog).getListView();
+                Integer selected = (Integer) lv.getTag();
+                if (selected != null) {
+                    selectedLocationItem = selected;
+                    Toast.makeText(getContext(), "confirm item: " + items[selected], Toast.LENGTH_SHORT).show();
+                    doPostOKOperation();
+                }
+            }
+        });
+        builder.show();
     }
 
-    public static JSONObject getJSONObjectFromURL(String urlString) throws IOException, JSONException {
+    private void doPostOKOperation() {
+        Log.d(DBG, "sel: " + selectedLocationItem);
+        double lat, lng;
+        String queryAddress = "";
+        Location targetLocation = null;
 
-        URL url = new URL(urlString);
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        // urlConnection.connect();
-        int a = urlConnection.getResponseCode();
+        try {
+            JSONObject results = resultArray.getJSONObject(selectedLocationItem);
+            JSONObject getmetry = results.getJSONObject("geometry").getJSONObject("location");
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line + "\n");
+            targetLocation = new Location(LocationManager.GPS_PROVIDER);
+            lat = getmetry.getDouble("lat");
+            lng = getmetry.getDouble("lng");
+            targetLocation.setLatitude(lat);
+            targetLocation.setLongitude(lng);
+            Log.d(DBG, "targetLocation lat: " + lat);
+            Log.d(DBG, "targetLocation lng: " + lng);
+            queryAddress = results.getString("formatted_address");
+            Log.d(DBG, "queryAddress: " + queryAddress);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
         }
-        br.close();
 
-        String jsonString = sb.toString();
+        // Clears all the existing markers on the map
+        googleMap.clear();
+        if (checkPermission()) {
+            googleMap.setMyLocationEnabled(true);
+        } else {
+            askPermission();
+            return;
+        }
+        // Creating an instance of GeoPoint, to display in Google Map
+        LatLng targetLatLng = new LatLng(lat, lng);
 
-        return new JSONObject(jsonString);
+        targetMarkerOptions = new MarkerOptions();
+        targetMarkerOptions.position(targetLatLng);
+        targetMarkerOptions.title(queryAddress);
+        googleMap.addMarker(targetMarkerOptions);
+
+        Location currentLocation = getLastKnownLocation();
+        if (currentLocation == null) {
+            Log.e(ERR, "Invalid current location used!");
+            return;
+        }
+        LatLng newLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        googleMap.animateCamera(CameraUpdateFactory.newLatLng(newLatLng));
+        new parseLocation().execute(currentLocation);
+        currentMarkerOptions = new MarkerOptions()
+                .position(newLatLng)
+                .title(addressText) // replace with addressText
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        googleMap.addMarker(currentMarkerOptions);
+
+        double currentLat = currentLocation.getLatitude();
+        double currentLng = currentLocation.getLongitude();
+        Log.d(DBG, "currentLocation lat: " + currentLat);
+        Log.d(DBG, "currentLocation lng: " + currentLng);
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        //the include method will calculate the min and max bound.
+        builder.include(currentMarkerOptions.getPosition());
+        builder.include(targetMarkerOptions.getPosition());
+        LatLngBounds bounds = builder.build();
+
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+        googleMap.animateCamera(cu);
+    }
+
+    private Location getLastKnownLocation() {
+        LocationManager mLocationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getAllProviders();
+        Location bestLocation = null;
+        for (String provider : providers) {
+            Location l = null;
+            if (checkPermission()) {
+                l = mLocationManager.getLastKnownLocation(provider);
+            }
+            if (l == null) {
+                Log.d(DBG, "continue");
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
     }
 
     // Check for permission to access Location

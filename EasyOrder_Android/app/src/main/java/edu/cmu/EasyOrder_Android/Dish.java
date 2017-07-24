@@ -10,6 +10,7 @@ public class Dish {
     private double price;
     private int quantity;
     private double rate;
+    private int id;
 
     public int getId() {
         return id;
@@ -18,8 +19,6 @@ public class Dish {
     public void setId(int id) {
         this.id = id;
     }
-
-    private int id;
 
     public String getName() {
         return this.name;
