@@ -119,9 +119,7 @@ public class CustomerPostFragment extends Fragment {
                 builder.setCancelable(false);
                 builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //TODO save to backend database
-                        Toast.makeText(getActivity(), "Further operations to save to backend database!",
-                                Toast.LENGTH_LONG).show();
+                        placeOrder();
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -173,8 +171,47 @@ public class CustomerPostFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    private void placeOrder() {
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        Long id = pref.getLong(TWITTER_USER_ID, 0);
+        String twitterID = id.toString();
+
+        JSONObject input = new JSONObject();
+        JSONArray orders = new JSONArray();
+        try {
+            input.put("twitterID", twitterID);
+            for (Dish dish: dishArrayList) {
+                if (dish.getQuantity() > 0) {
+                    JSONObject jsonDish = new JSONObject();
+                    jsonDish.put("dish", dish.getId());
+                    jsonDish.put("amount", dish.getQuantity());
+                    orders.put(jsonDish);
+                }
+            }
+
+            input.put("order", orders);
+        } catch (JSONException eJson) {
+            Log.d("Place Order", "json input parse error");
+        }
+
+        Response.Listener<JSONObject> placeCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(getContext(), "Your Order Has Been Placed!", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/order/bunch/",
+                        Request.Method.POST,
+                        input,
+                        placeCallback,
+                        null);
+    }
+
     private void fetchDishInfo() {
-        Response.Listener<JSONArray> orderCallback = new Response.Listener<JSONArray>() {
+        Response.Listener<JSONArray> dishCallback = new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 try {
@@ -200,7 +237,7 @@ public class CustomerPostFragment extends Fragment {
                 .makeRequest(Utils.API_BASE + "/dish/",
                         Request.Method.GET,
                         null,
-                        orderCallback,
+                        dishCallback,
                         null);
     }
 }
