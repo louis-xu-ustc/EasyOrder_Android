@@ -24,6 +24,7 @@
 
         <EditText
             android:id="@+id/retailer_add_post_dish_price"
+            android:inputType="numberDecimal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/dish_price"
