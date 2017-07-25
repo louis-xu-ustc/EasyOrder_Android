@@ -87,20 +87,6 @@ public class RetailerAddPostActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-                /* in order to save photos to App specific folder
-                File photoFile = null;
-               try {
-                    photoFile = createImageFile();
-                    mCurrentPhotoPath = f.getAbsolutePath();
-                    Uri photoURI = FileProvider.getUriForFile(this,
-                                                  "edu.cmu.camera.fileprovider",
-                                                  photoFile);
-                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    f = null;
-                    mCurrentPhotoPath = null;
-                } */
                     startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }
