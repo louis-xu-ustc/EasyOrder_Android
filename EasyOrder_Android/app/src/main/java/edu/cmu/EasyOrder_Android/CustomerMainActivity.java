@@ -110,7 +110,7 @@ public class CustomerMainActivity extends AppCompatActivity implements
         };
 
         RESTAPI.getInstance(getApplicationContext())
-                .makeRequest(Utils.API_BASE + "/payment/checkout/",
+                .makeRequest(Utils.API_BASE + "/payment/checkout/android/",
                         Request.Method.POST,
                         input,
                         checkoutCallback,

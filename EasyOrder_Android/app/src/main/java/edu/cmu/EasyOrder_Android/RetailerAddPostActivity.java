@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,6 +17,8 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +26,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -105,15 +115,22 @@ public class RetailerAddPostActivity extends AppCompatActivity {
         public void onClick(View v) {
             Context context = getApplicationContext();
 
-            CharSequence inputPrice = dishPrice.getText().toString();
-            if (!isDigitsOnly(inputPrice)) {
-                Toast dishPriceErr = Toast.makeText(context, "Invalid dish price!", Toast.LENGTH_SHORT);
-                dishPriceErr.show();
-                return;
+            String name = dishName.getText().toString();
+            String priceStr = dishPrice.getText().toString();
+            double price;
+            if (priceStr.isEmpty()) {
+                price = 0.0;
+            } else {
+                price = Double.parseDouble(priceStr);
             }
-            // TODO further operation on backend API
-            Toast saveButtonToast = Toast.makeText(context, "Further backend operations to save dish!", Toast.LENGTH_SHORT);
-            saveButtonToast.show();
+
+            Bitmap dishImage = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            dishImage.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+            postNewDish(name, price, encodedImage);
         }
     };
 
@@ -226,5 +243,30 @@ public class RetailerAddPostActivity extends AppCompatActivity {
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
         return image;
+    }
+
+    private void postNewDish(String name, double price, String photo) {
+        JSONObject dish = new JSONObject();
+        try {
+            dish.put("name", name);
+            dish.put("price", price);
+            dish.put("photo", photo);
+        } catch (JSONException eJson) {
+            Log.d("Retailer post dish", "json input parse error");
+        }
+
+        Response.Listener<JSONObject> dishCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(getApplicationContext(), "Dish Post Succeeded", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        RESTAPI.getInstance(getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/dish/",
+                        Request.Method.POST,
+                        dish,
+                        dishCallback,
+                        null);
     }
 }
