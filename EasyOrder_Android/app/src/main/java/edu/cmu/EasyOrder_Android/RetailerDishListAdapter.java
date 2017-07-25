@@ -1,6 +1,7 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -36,7 +39,15 @@ public class RetailerDishListAdapter extends ArrayAdapter<Dish> {
         Dish dish = dishArrayList.get(pos);
 
         ImageView imageView = (ImageView) v.findViewById(R.id.retailer_dish_image);
-        imageView.setImageResource(R.drawable.default_dish_icon);
+        try {
+            Picasso.with(getContext())
+                    .load(Utils.BACKEND_SERVER + dish.getImage())
+                    .placeholder(R.drawable.default_dish_icon) //optional
+                    .into(imageView);                        //Your image view object.
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            Log.d("Retailer Post Dish", msg);
+        }
 
         TextView dishName = (TextView) v.findViewById(R.id.retailer_dish_name);
         dishName.setText(dish.getName());

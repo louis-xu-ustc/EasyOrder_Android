@@ -57,7 +57,7 @@ public class CustomerDishListAdapter extends ArrayAdapter<Dish> {
                     .into(imageView);                        //Your image view object.
         } catch (Exception e) {
             String msg = e.getMessage();
-            Log.d("Load Dish Photo", msg);
+            Log.d("Customer Post Dish", msg);
         }
 
         TextView dishName = (TextView) view.findViewById(R.id.customer_dish_name);
