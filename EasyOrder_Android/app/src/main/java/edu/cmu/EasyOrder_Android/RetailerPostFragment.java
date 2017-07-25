@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -72,8 +82,7 @@ public class RetailerPostFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         dishArrayList = new ArrayList<>();
-        //FIXME fetch data from backend database
-        fillFakeDishArrayList();
+        fetchDishInfo();
     }
 
     @Override
@@ -102,8 +111,8 @@ public class RetailerPostFragment extends Fragment {
                                 Dish dish = (Dish) dishAdapter.getItem(position);
                                 dishAdapter.remove(dish);
                                 dishAdapter.notifyDataSetChanged();
-                                //TODO
-                                Toast.makeText(getContext(), "Further backend operations to handle delete post!", Toast.LENGTH_LONG).show();
+
+                                deleteDish(dish);
                             }
                         });
                         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -121,9 +130,6 @@ public class RetailerPostFragment extends Fragment {
         postMoreDishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                //TODO add action to post more dish
-//                Toast.makeText(getActivity(), "Further operation to post one more dish!",
-//                        Toast.LENGTH_LONG).show();
                 Intent addDishPostIntent = new Intent(getContext(), RetailerAddPostActivity.class);
                 startActivity(addDishPostIntent);
             }
@@ -170,32 +176,64 @@ public class RetailerPostFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private void fillFakeDishArrayList() {
-        Dish dish1 = new Dish();
-        dish1.setName("pizza");
-        dish1.setPrice(10);
-        //FIXME
-//        dish1.setImage(ContextCompat.getDrawable(getContext(),R.drawable.pizza).toString());
-        dish1.setQuantity(1);
-        dish1.setRate(3);
-        dishArrayList.add(dish1);
+    private void fetchDishInfo() {
+        Response.Listener<JSONArray> dishCallback = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    dishArrayList.clear();
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject curDish = (JSONObject) response.get(i);
+                        Dish dish = new Dish();
+                        dish.setName(curDish.getString("name"));
+                        dish.setPrice(curDish.getDouble("price"));
+                        dish.setRate(curDish.getDouble("rate"));
+                        dish.setImage(curDish.getString("photo"));
+                        dish.setId(curDish.getInt("id"));
+                        dish.setQuantity(curDish.getInt("num"));
+                        dishArrayList.add(dish);
+                    }
+                    dishAdapter.notifyDataSetChanged();
+                } catch (JSONException eJson) {
+                    Log.d("Customer Tab 3", eJson.getMessage());
+                }
+            }
+        };
 
-        Dish dish2 = new Dish();
-        dish2.setName("salad");
-        dish2.setPrice(12);
-        // FIXME
-//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
-        dish2.setQuantity(0);
-        dish2.setRate(4);
-        dishArrayList.add(dish2);
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/order/",
+                        Request.Method.GET,
+                        null,
+                        dishCallback,
+                        null);
+    }
 
-        Dish dish3 = new Dish();
-        dish3.setName("fish & chips");
-        dish3.setPrice(0);
-        // FIXME
-//        dish2.setImage(ContextCompat.getDrawable(getContext(),R.drawable.salad).toString());
-        dish3.setQuantity(0);
-        dish3.setRate(2);
-        dishArrayList.add(dish3);
+    private void deleteDish(Dish dish) {
+
+        Response.Listener<JSONObject> dishCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+            }
+        };
+
+        Response.ErrorListener errCallback = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                NetworkResponse response = error.networkResponse;
+                if (response != null && response.data != null) {
+                    Toast.makeText(getContext(), "Error: " + new String(response.data), Toast.LENGTH_SHORT).show();
+                } else {
+                    // Null Response Body, as specified by 204 HTTP Status Code
+                    Toast.makeText(getContext(), "Dish Deleted", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/dish/" + dish.getId() + "/",
+                        Request.Method.DELETE,
+                        null,
+                        dishCallback,
+                        errCallback);
     }
 }
