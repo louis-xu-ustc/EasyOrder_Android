@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_IMAGE_URL;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_NAME;
 
 public class CustomerProfileActivity extends AppCompatActivity {
 
@@ -37,6 +39,11 @@ public class CustomerProfileActivity extends AppCompatActivity {
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String imageURL = pref.getString(PREFERENCE_TWITTER_USER_IMAGE_URL, "");
+        String username = pref.getString(PREFERENCE_TWITTER_USER_NAME, "Anonymous");
+
+        TextView mProfileName = (TextView) findViewById(R.id.customer_profile_name);
+        mProfileName.setText(username);
+
         ImageView mProfileImage = (ImageView) findViewById(R.id.customer_profile_image);
         try {
             Picasso.with(getApplicationContext())
