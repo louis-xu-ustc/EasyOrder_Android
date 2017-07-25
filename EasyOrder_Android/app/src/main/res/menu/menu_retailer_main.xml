@@ -4,14 +4,20 @@
     tools:context="edu.cmu.EasyOrder_Android.RetailerMainActivity">
 
     <item
+        android:id="@+id/retailer_geofence_switch_button"
+        android:checkable="true"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="GEO"
+        android:titleCondensed="GEO"
+        app:showAsAction="always|withText" />
+
+    <item
         android:id="@+id/retailer_setting_profile_button"
         android:alphabeticShortcut="+"
         android:icon="@android:drawable/ic_menu_info_details"
         android:title="profile"
         android:titleCondensed="profile"
-        app:showAsAction="always|withText">
-
-    </item>
+        app:showAsAction="always|withText"></item>
 
     <item
         android:id="@+id/retailer_setting_logout_button"
@@ -19,8 +25,6 @@
         android:icon="@android:drawable/ic_menu_more"
         android:title="logout"
         android:titleCondensed="profile"
-        app:showAsAction="always|withText">
-
-    </item>
+        app:showAsAction="always|withText"></item>
 
 </menu>

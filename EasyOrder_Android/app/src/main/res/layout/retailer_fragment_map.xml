@@ -54,27 +54,6 @@
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/retailer_geofence_on_button"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toEndOf="@+id/retailer_picking_location"
-                    android:layout_marginLeft="100dp"
-                    android:minHeight="0dp"
-                    android:minWidth="0dp"
-                    android:text="On" />
-                <Button
-                    android:id="@+id/retailer_geofence_off_button"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toEndOf="@+id/retailer_picking_location"
-                    android:layout_marginLeft="150dp"
-                    android:minHeight="0dp"
-                    android:minWidth="0dp"
-                    android:text="Off" />
-
             </RelativeLayout>
 
             <TextView

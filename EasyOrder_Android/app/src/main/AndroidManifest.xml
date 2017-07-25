@@ -67,15 +67,20 @@
         <activity android:name=".RetailerProfileActivity" />
         <activity android:name=".CustomerProfileActivity" />
         <activity android:name=".RetailerAddPostActivity"></activity>
-        <activity android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"
+        <activity
+            android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="edu.cmu.easyorderandroid.braintree" />
             </intent-filter>
         </activity>
+
+        <service android:name=".GeofenceTransitionsIntentService" />
     </application>
 
 </manifest>
