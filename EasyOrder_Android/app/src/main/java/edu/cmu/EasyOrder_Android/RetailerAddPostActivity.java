@@ -17,7 +17,6 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -38,8 +37,6 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import static android.text.TextUtils.isDigitsOnly;
 
 public class RetailerAddPostActivity extends AppCompatActivity {
     public static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -104,19 +101,34 @@ public class RetailerAddPostActivity extends AppCompatActivity {
             String name = dishName.getText().toString();
             String priceStr = dishPrice.getText().toString();
             double price;
-            if (priceStr.isEmpty()) {
-                price = 0.0;
-            } else {
-                price = Double.parseDouble(priceStr);
+            if (name.trim().equals("")) {
+                Toast.makeText(getApplicationContext(), "Invalid dish name specified!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (priceStr.trim().equals("")) {
+                Toast.makeText(getApplicationContext(), "Invalid dish price specified!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            price = Double.parseDouble(priceStr);
+
+            BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
+            if (drawable == null) {
+                Toast.makeText(getApplicationContext(), "Invalid dish image specified!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Bitmap dishImage = drawable.getBitmap();
+            if (dishImage == null) {
+                Toast.makeText(getApplicationContext(), "Invalid dish image specified!", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            Bitmap dishImage = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             dishImage.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
             postNewDish(name, price, encodedImage);
+            setResult(Activity.RESULT_OK);
         }
     };
 
@@ -245,6 +257,8 @@ public class RetailerAddPostActivity extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 Toast.makeText(getApplicationContext(), "Dish Post Succeeded", Toast.LENGTH_SHORT).show();
+                // finish this activity after getting response
+                finish();
             }
         };
 

@@ -1,5 +1,6 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +28,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import static edu.cmu.EasyOrder_Android.Utils.ADD_DISH_POST;
+import static edu.cmu.EasyOrder_Android.Utils.TAG;
 
 
 /**
@@ -86,6 +90,22 @@ public class RetailerPostFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        fetchDishInfo();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d(TAG, "add dish post enter!" + " requestCode:" + requestCode + " resultCode: " + resultCode);
+        if (requestCode == ADD_DISH_POST && resultCode == Activity.RESULT_OK) {
+            fetchDishInfo();
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -131,7 +151,7 @@ public class RetailerPostFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent addDishPostIntent = new Intent(getContext(), RetailerAddPostActivity.class);
-                startActivity(addDishPostIntent);
+                startActivityForResult(addDishPostIntent, ADD_DISH_POST);
             }
         });
         return rootView;
@@ -194,6 +214,7 @@ public class RetailerPostFragment extends Fragment {
                         dishArrayList.add(dish);
                     }
                     dishAdapter.notifyDataSetChanged();
+                    mListView.setAdapter(dishAdapter);
                 } catch (JSONException eJson) {
                     Log.d("Customer Tab 3", eJson.getMessage());
                 }

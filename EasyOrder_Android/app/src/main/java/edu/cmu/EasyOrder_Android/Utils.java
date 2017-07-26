@@ -20,6 +20,7 @@ public class Utils {
 
     public static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     public static final int REQUEST_PAYMENT_REQUEST_CODE = 1012;
+    public static final int ADD_DISH_POST = 1024;
     public static final String TAG = "TAG";
     public static final String DBG = "DBG";
     public static final String ERR = "ERR";
