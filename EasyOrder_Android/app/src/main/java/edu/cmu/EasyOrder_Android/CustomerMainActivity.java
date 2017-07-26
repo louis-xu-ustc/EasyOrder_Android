@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -58,6 +59,7 @@ public class CustomerMainActivity extends AppCompatActivity implements
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -104,8 +106,10 @@ public class CustomerMainActivity extends AppCompatActivity implements
         Response.Listener<JSONObject> checkoutCallback = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Toast.makeText(getApplicationContext(), "Payment Succeeded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_SHORT).show();
                 // TODO: Disable Pay Button or change UI to end all transaction
+                Button payButton = (Button) findViewById(R.id.customer_pay_button);
+                payButton.setEnabled(false);
             }
         };
 
