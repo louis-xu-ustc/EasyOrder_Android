@@ -93,6 +93,7 @@ public class CustomerPaymentFragment extends Fragment {
 
         order = new Order();
         dishArrayList = new ArrayList<>();
+        pollNotification();
     }
 
     @Override
@@ -114,7 +115,6 @@ public class CustomerPaymentFragment extends Fragment {
                 preparePurchase();
             }
         });
-        pollNotification();
 
         return rootView;
     }

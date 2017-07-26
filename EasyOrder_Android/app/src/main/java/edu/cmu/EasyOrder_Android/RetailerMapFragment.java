@@ -27,6 +27,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -574,5 +576,41 @@ public class RetailerMapFragment extends Fragment {
         Message msg = uiHandler.obtainMessage(id);
         msg.obj = message;
         uiHandler.sendMessage(msg);
+    }
+
+    private void updateRetailerLocation() {
+        Response.Listener<JSONObject> locationCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Thread newPost = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(10000);
+                            updateRetailerLocation();
+                        } catch (InterruptedException e) {
+                            Log.d(DBG, e.getMessage());
+                        }
+                    }
+                });
+                newPost.start();
+            }
+        };
+
+        Location curLocation = getLastKnownLocation();
+
+        JSONObject input = new JSONObject();
+        try {
+            input.put("latitude", curLocation.getLatitude());
+            input.put("longitude", curLocation.getLongitude());
+        } catch (JSONException eJson) {
+            Log.d("Retailer Tab 2", "Post location input json parse error");
+        }
+
+        RESTAPI.getInstance(getContext())
+                .makeRequest(Utils.API_BASE + "/current_location/",
+                        Request.Method.PUT,
+                        input,
+                        locationCallback,
+                        null);
     }
 }

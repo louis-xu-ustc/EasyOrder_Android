@@ -20,6 +20,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -316,5 +318,31 @@ public class CustomerMapFragment extends Fragment {
                 break;
             }
         }
+    }
+
+    private void getRetailerLocation() {
+        Response.Listener<JSONObject> locationCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                try {
+                    double lat = response.getDouble("latitude");
+                    double lng = response.getDouble("longitude");
+                    LatLng retailerLatLng = new LatLng(lat, lng);
+
+                    // TODO: update ETAs
+
+                } catch (JSONException eJson) {
+                    Log.d("Customer Tab 2", "Get retailer location response parse json error");
+                }
+            }
+        };
+
+        RESTAPI.getInstance(getContext())
+                .makeRequest(Utils.API_BASE + "/current_location/",
+                        Request.Method.GET,
+                        null,
+                        locationCallback,
+                        null);
     }
 }
