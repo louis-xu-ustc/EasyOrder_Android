@@ -1,11 +1,15 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +29,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static android.content.Context.NOTIFICATION_SERVICE;
+import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 
@@ -52,6 +58,8 @@ public class CustomerPaymentFragment extends Fragment {
     private ArrayList<Dish> dishArrayList;
     private Order order;
     private TextView totalPrice;
+
+    private Long notificationTimestamp = 0L;
 
     public CustomerPaymentFragment() {
         // Required empty public constructor
@@ -106,6 +114,7 @@ public class CustomerPaymentFragment extends Fragment {
                 preparePurchase();
             }
         });
+        pollNotification();
 
         return rootView;
     }
@@ -207,5 +216,55 @@ public class CustomerPaymentFragment extends Fragment {
     private void popupPayment(String token) {
         DropInRequest dropInRequest = new DropInRequest().clientToken(token);
         getActivity().startActivityForResult(dropInRequest.getIntent(getContext()), Utils.REQUEST_PAYMENT_REQUEST_CODE);
+    }
+
+    private void pollNotification() {
+        Response.Listener<JSONObject> tokenCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    Boolean notify = response.getBoolean("notification");
+                    if (notify) {
+                        String content = response.getString("content");
+                        Long timestamp = response.getLong("modified_at");
+                        notificationTimestamp = timestamp;
+//                        NotificationCompat.Builder mBuilder =
+//                                new NotificationCompat.Builder(getContext())
+//                                        .setContentTitle("Meal Going Away")
+//                                        .setContentText(content);
+//                        NotificationManager mNotifyMgr =
+//                                (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
+//                        mNotifyMgr.notify(0, mBuilder.build());
+                    }
+                } catch (JSONException eJson) {
+                    Log.d("Customer Tab 3", "Json Parse Error");
+                }
+
+                Thread newPoll = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(10000);
+                            pollNotification();
+                        } catch (InterruptedException e) {
+                            Log.d(DBG, e.getMessage());
+                        }
+                    }
+                });
+                newPoll.start();
+            }
+        };
+
+        String URL = Utils.API_BASE + "/notification/";
+        if (notificationTimestamp != 0L) {
+            URL += notificationTimestamp;
+            URL += "/";
+        }
+
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(URL,
+                        Request.Method.GET,
+                        null,
+                        tokenCallback,
+                        null);
     }
 }

@@ -1,9 +1,12 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +15,17 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -68,8 +81,6 @@ public class RetailerPaymentFragment extends Fragment {
         }
 
         orderArrayList = new ArrayList<>();
-        //FIXME
-        fillFakeOrderArrayList();
     }
 
     @Override
@@ -84,11 +95,10 @@ public class RetailerPaymentFragment extends Fragment {
         notifyAllButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO add action to notify all unpaid users
-                Toast.makeText(getActivity(), "Further operation to notify all unpaid users!",
-                        Toast.LENGTH_LONG).show();
+            postNotification();
             }
         });
+        fetchOrderDetail();
         return rootView;
     }
 
@@ -131,15 +141,58 @@ public class RetailerPaymentFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private void fillFakeOrderArrayList() {
-        Order order1 = new Order();
-        order1.setUserName("JiaJie Yang");
-        order1.setIfNotify(true);
-        orderArrayList.add(order1);
+    private void fetchOrderDetail() {
+        Response.Listener<JSONArray> orderCallback = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    // must use the same dishArrayList, otherwise notifyDatasetChanged cannot be useful
+                    orderArrayList.clear();
 
-        Order order2 = new Order();
-        order2.setUserName("Yunpeng Xu");
-        order2.setIfNotify(false);
-        orderArrayList.add(order2);
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject curUser = (JSONObject) response.get(i);
+                        Order order = new Order();
+                        order.setUserName(curUser.getString("name"));
+                        order.setIfNotify(!curUser.getBoolean("paid"));
+                        orderArrayList.add(order);
+                    }
+
+                    orderListAdapter.notifyDataSetChanged();
+                } catch (JSONException eJson) {
+                    Log.d("Customer Tab 3", eJson.getMessage());
+                }
+            }
+        };
+
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/user/",
+                        Request.Method.GET,
+                        null,
+                        orderCallback,
+                        null);
+
+    }
+
+    private void postNotification() {
+        Response.Listener<JSONObject> notifyCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(getContext(), "Notification Posted", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        JSONObject input = new JSONObject();
+        try {
+            input.put("content", "Dear user, please get your meal ASAP");
+        } catch (JSONException eJson) {
+            Log.d("Customer Tab 3", "Post notification input json parse error");
+        }
+
+        RESTAPI.getInstance(getContext())
+                .makeRequest(Utils.API_BASE + "/notification/",
+                        Request.Method.PUT,
+                        input,
+                        notifyCallback,
+                        null);
     }
 }

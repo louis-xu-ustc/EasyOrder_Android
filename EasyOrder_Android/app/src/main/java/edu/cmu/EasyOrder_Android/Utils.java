@@ -24,7 +24,7 @@ public class Utils {
     public static final String DBG = "DBG";
     public static final String ERR = "ERR";
 
-    public static final String BACKEND_SERVER = "http://128.237.222.2:9000";
+    public static final String BACKEND_SERVER = "http://192.168.0.102:9000";
     // public static final String BACKEND_SERVER = "http://54.202.127.83";
     public static final String API_BASE = BACKEND_SERVER + "/backend";
 }
