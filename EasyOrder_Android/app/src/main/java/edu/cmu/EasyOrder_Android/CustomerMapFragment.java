@@ -151,6 +151,7 @@ public class CustomerMapFragment extends Fragment {
                 LatLng curLatLng = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
                 CameraPosition cameraPosition = new CameraPosition.Builder().target(curLatLng).zoom(12).build();
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
             }
         });
 

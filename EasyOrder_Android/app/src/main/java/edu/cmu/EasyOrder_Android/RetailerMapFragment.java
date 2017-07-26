@@ -147,6 +147,8 @@ public class RetailerMapFragment extends Fragment {
             return v;
         }
 
+        updateRetailerLocation();
+
         // Set Google Map Focus on current Location first
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
