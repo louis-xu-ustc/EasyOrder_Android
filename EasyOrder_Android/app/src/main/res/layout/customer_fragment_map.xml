@@ -12,7 +12,7 @@
         <com.google.android.gms.maps.MapView
             android:id="@+id/customer_mapView"
             android:layout_width="match_parent"
-            android:layout_height="425dp" />
+            android:layout_height="400dp" />
 
         <TableLayout
             android:layout_width="match_parent"
