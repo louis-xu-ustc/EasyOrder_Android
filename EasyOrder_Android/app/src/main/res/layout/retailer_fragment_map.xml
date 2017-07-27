@@ -46,44 +46,23 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/retailer_picking_location"
+                    android:id="@+id/retailer_pickup_location_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="left"
                     android:padding="5dp"
-                    android:text="Picking Locations:"
+                    android:text="Pickup Locations:"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
 
             </RelativeLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="3dp"
-                android:text="4616 Henry Street"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="3dp"
-                android:text="GHC"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="3dp"
-                android:text="UC"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
+            <ListView
+                android:id="@+id/retailer_picking_location_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </ListView>
         </LinearLayout>
 
     </LinearLayout>

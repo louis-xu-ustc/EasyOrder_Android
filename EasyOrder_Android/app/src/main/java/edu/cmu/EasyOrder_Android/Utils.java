@@ -21,11 +21,12 @@ public class Utils {
     public static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     public static final int REQUEST_PAYMENT_REQUEST_CODE = 1012;
     public static final int ADD_DISH_POST = 1024;
+    public static final int MAX_PICKUP_LOCATION_DISPLAY = 3;
     public static final String TAG = "TAG";
     public static final String DBG = "DBG";
     public static final String ERR = "ERR";
 
-//    public static final String BACKEND_SERVER = "http://192.168.0.102:9000";
-     public static final String BACKEND_SERVER = "http://54.202.127.83";
+    //    public static final String BACKEND_SERVER = "http://192.168.0.102:9000";
+    public static final String BACKEND_SERVER = "http://54.202.127.83";
     public static final String API_BASE = BACKEND_SERVER + "/backend";
 }

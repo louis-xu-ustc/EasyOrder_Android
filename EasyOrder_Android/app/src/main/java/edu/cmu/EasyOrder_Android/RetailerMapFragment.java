@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -59,7 +60,9 @@ import java.util.Locale;
 import static android.content.Context.LOCATION_SERVICE;
 import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.ERR;
+import static edu.cmu.EasyOrder_Android.Utils.MAX_PICKUP_LOCATION_DISPLAY;
 import static edu.cmu.EasyOrder_Android.Utils.REQUEST_PERMISSIONS_REQUEST_CODE;
+import static edu.cmu.EasyOrder_Android.Utils.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -89,6 +92,9 @@ public class RetailerMapFragment extends Fragment {
     private GoogleMap googleMap;
     private EditText mQuery;
     private UIHandler uiHandler;
+    private ArrayAdapter pickupLocationAdapter;
+    private ListView mListView;
+    ArrayList<PickupLocation> pickupLocationArrayList;
 
     private JSONArray resultArray;
     private int selectedLocationItem = 0;
@@ -126,6 +132,8 @@ public class RetailerMapFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        pickupLocationArrayList = new ArrayList<>();
+        fetchPickupLocationsInfo();
     }
 
     @Override
@@ -134,10 +142,16 @@ public class RetailerMapFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.retailer_fragment_map, container, false);
 
+        // pickup locations
+        mListView = (ListView) v.findViewById(R.id.retailer_picking_location_list);
+        mContext = getContext();
+        pickupLocationAdapter = new RetailerPickupLocationListAdapter(mContext, R.layout.retailer_pickup_location_list_view, pickupLocationArrayList);
+        mListView.setAdapter(pickupLocationAdapter);
+
         // Initialize Google Map
         locationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
-        mContext = getContext();
+
 
         mMapView = (MapView) v.findViewById(R.id.retailer_mapView);
         mMapView.onCreate(savedInstanceState);
@@ -451,6 +465,9 @@ public class RetailerMapFragment extends Fragment {
         targetMarkerOptions.title(queryAddress);
         googleMap.addMarker(targetMarkerOptions);
 
+        // add the newly searched result into pickup locations
+        addPickupLocation(targetLocation);
+
         Location currentLocation = getLastKnownLocation();
         if (currentLocation == null) {
             Log.e(ERR, "Invalid current location used!");
@@ -591,7 +608,7 @@ public class RetailerMapFragment extends Fragment {
                     public void run() {
                         try {
                             // FIXME 60s to update the location
-                            Thread.sleep(10000);
+                            Thread.sleep(60000);
                             updateRetailerLocation();
                         } catch (InterruptedException e) {
                             Log.d(DBG, e.getMessage());
@@ -618,5 +635,90 @@ public class RetailerMapFragment extends Fragment {
                         input,
                         locationCallback,
                         null);
+    }
+
+    /**
+     * add new searched result into the pickup location list
+     *
+     * @param newPickupLocation
+     */
+    private void addPickupLocation(Location newPickupLocation) {
+        Log.d(TAG, "addPickupLocation " + newPickupLocation.toString());
+        Response.Listener<JSONObject> addPickupLocationCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                // TODO should immediately update the listview after a new pickup location is uploaded
+                Toast.makeText(mContext, "successfully upload a new pickup location!", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        JSONObject input = new JSONObject();
+        try {
+            input.put("latitude", newPickupLocation.getLatitude());
+            input.put("longitude", newPickupLocation.getLongitude());
+        } catch (JSONException eJson) {
+            Log.d("Retailer Tab 2", "Add new pickup location input json parse error");
+        }
+
+        RESTAPI.getInstance(getContext())
+                .makeRequest(Utils.API_BASE + "/pickup_locations/",
+                        Request.Method.POST,
+                        input,
+                        addPickupLocationCallback,
+                        null);
+    }
+
+    /**
+     * fetch all pickup locations from the server
+     */
+    private void fetchPickupLocationsInfo() {
+        Response.Listener<JSONArray> pickupLocationCallback = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    pickupLocationArrayList.clear();
+                    // only display the latest three pickup locations
+                    int displayLimit = Math.min(response.length(), MAX_PICKUP_LOCATION_DISPLAY);
+                    for (int i = response.length() - 1, cnt = 0; i >= 0; i--, cnt++) {
+                        if (cnt >= displayLimit) break;
+                        JSONObject curPickupLocation = (JSONObject) response.get(i);
+                        PickupLocation location = new PickupLocation();
+                        double lat = curPickupLocation.getDouble("latitude");
+                        double lng = curPickupLocation.getDouble("longitude");
+                        String addr = getAddress(lat, lng);
+                        location.setLatitude(lat);
+                        location.setLongitude(lng);
+                        location.setLocation(addr);
+                        pickupLocationArrayList.add(location);
+                    }
+                    pickupLocationAdapter.notifyDataSetChanged();
+                    mListView.setAdapter(pickupLocationAdapter);
+                } catch (JSONException eJson) {
+                    Log.d("Retailer Tab 2", eJson.getMessage());
+                }
+            }
+        };
+
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/pickup_locations/",
+                        Request.Method.GET,
+                        null,
+                        pickupLocationCallback,
+                        null);
+    }
+
+    public String getAddress(double lat, double lng) {
+        String address = null;
+        Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            Address obj = addresses.get(0);
+            address = obj.getAddressLine(0);
+            Log.d(TAG, "Address" + address);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return address;
     }
 }
