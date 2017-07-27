@@ -1,13 +1,17 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +36,7 @@ import java.util.ArrayList;
 
 import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
+import static edu.cmu.EasyOrder_Android.Utils.TAG;
 
 
 /**
@@ -276,15 +281,30 @@ public class CustomerPaymentFragment extends Fragment {
                     if (notify) {
                         String content = response.getString("content");
                         Long timestamp = response.getLong("modified_at");
+                        Log.d(TAG, "notification: " + notify + " content: " + content + " timestamp: " + timestamp);
                         notificationTimestamp = timestamp;
 
-//                        NotificationCompat.Builder mBuilder =
-//                                new NotificationCompat.Builder((Activity)mContext)
-//                                        .setContentTitle("Meal Going Away")
-//                                        .setContentText(content);
-//                        NotificationManager mNotifyMgr =
-//                                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
-//                        mNotifyMgr.notify(0, mBuilder.build());
+                        // Get a notification builder that's compatible with platform versions >= 4
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder((Activity) mContext);
+                        // Define the notification settings.
+                        builder.setSmallIcon(R.drawable.notification)
+                                // In a real app, you may want to use a library like Volley
+                                // to decode the Bitmap.
+                                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
+                                        R.drawable.notification))
+                                .setColor(Color.RED)
+                                .setContentTitle("Meal Going Away")
+                                .setContentText(content);
+
+                        // Dismiss notification once the user touches it.
+                        builder.setAutoCancel(true);
+
+                        // Get an instance of the Notification manager
+                        NotificationManager mNotificationManager =
+                                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                        // Issue the notification
+                        mNotificationManager.notify(0, builder.build());
                     }
                 } catch (JSONException eJson) {
                     Log.d("Customer Tab 3", "Json Parse Error");
