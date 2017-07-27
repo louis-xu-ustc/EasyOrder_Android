@@ -7,10 +7,10 @@ import java.util.ArrayList;
  */
 
 public class Order {
-    public String userName;
-    public Boolean ifNotify;
-    public int totalPrice;
-    ArrayList<Dish> dishList;
+    private String userName;
+    private Boolean ifNotify;
+    private int totalPrice;
+    private ArrayList<Dish> dishList;
 
     public Order() {
         dishList = new ArrayList<>();

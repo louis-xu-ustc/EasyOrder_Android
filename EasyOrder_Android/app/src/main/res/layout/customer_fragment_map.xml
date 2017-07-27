@@ -14,116 +14,46 @@
             android:layout_width="match_parent"
             android:layout_height="400dp" />
 
-        <TableLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <TableRow
-                android:layout_width="fill_parent"
+            <RelativeLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
+                android:orientation="horizontal">
 
                 <TextView
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:paddingTop="5dip"
-                    android:paddingEnd="40dip"
-                    android:text="Picking Locations:"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:id="@+id/customer_pickup_location_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:padding="5dp"
+                    android:text="Pickup Locations:"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/black"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:layout_weight="1"
-                    android:gravity="left"
-                    android:paddingStart="20dip"
-                    android:text="ETA:"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginRight="20dp"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:text="ETA"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/black" />
 
-            <!-- Row 1 with 2 columns -->
-            <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
+            </RelativeLayout>
 
-                <TextView
-                    android:id="@+id/textView1"
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:paddingTop="3dip"
-                    android:paddingEnd="40dip"
-                    android:text="4616 Henry Street"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                <TextView
-                    android:id="@+id/andrewId"
-                    android:layout_weight="1"
-                    android:gravity="left"
-                    android:paddingStart="20dip"
-                    android:text="10 min"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </TableRow>
-
-            <!-- Row 2 with 2 columns -->
-            <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
-
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:paddingTop="3dip"
-                    android:paddingEnd="40dip"
-                    android:text="GHC"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                <TextView
-                    android:id="@+id/dateTime"
-                    android:layout_weight="1"
-                    android:gravity="left"
-                    android:paddingStart="20dip"
-                    android:text="15 min"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </TableRow>
-
-            <!-- Row 3 with 2 columns -->
-            <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
-
-                <TextView
-                    android:id="@+id/textView3"
-                    android:layout_weight="1"
-                    android:gravity="right"
-                    android:paddingTop="3dip"
-                    android:paddingEnd="40dip"
-                    android:text="UC"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                <TextView
-                    android:id="@+id/device"
-                    android:layout_weight="1"
-                    android:gravity="left"
-                    android:paddingStart="20dip"
-                    android:text="20 min"
-                    android:textColor="#000000"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </TableRow>
-        </TableLayout>
+            <ListView
+                android:id="@+id/customer_pickup_location_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"></ListView>
+        </LinearLayout>
 
     </LinearLayout>
 </FrameLayout>
