@@ -40,6 +40,7 @@ import java.util.Map;
 
 import static android.R.drawable.ic_menu_add;
 import static android.R.drawable.ic_menu_delete;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
 
 public class RetailerMainActivity extends AppCompatActivity implements
         RetailerPostFragment.OnFragmentInteractionListener,
@@ -182,8 +183,11 @@ public class RetailerMainActivity extends AppCompatActivity implements
                 return true;
 
             case R.id.retailer_setting_logout_button:
-                // TODO handle log out on backend
-                Toast.makeText(RetailerMainActivity.this, "Log out of retailer account, further operations to handle authentication data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RetailerMainActivity.this, "Log out of retailer account", Toast.LENGTH_SHORT).show();
+                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor edit = pref.edit();
+                edit.putBoolean(PREFERENCE_TWITTER_LOGGED_IN, false);
+                edit.apply();
                 finish();
                 return true;
             default:
