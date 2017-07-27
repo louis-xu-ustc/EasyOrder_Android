@@ -1,6 +1,7 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -94,6 +95,7 @@ public class RetailerMapFragment extends Fragment {
     private String addressText;
     private MarkerOptions targetMarkerOptions;
     private MarkerOptions currentMarkerOptions;
+    private Context mContext;
 
     public RetailerMapFragment() {
         // Required empty public constructor
@@ -135,6 +137,7 @@ public class RetailerMapFragment extends Fragment {
         // Initialize Google Map
         locationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+        mContext = getContext();
 
         mMapView = (MapView) v.findViewById(R.id.retailer_mapView);
         mMapView.onCreate(savedInstanceState);
@@ -481,13 +484,13 @@ public class RetailerMapFragment extends Fragment {
     }
 
     private Location getLastKnownLocation() {
-        LocationManager mLocationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
-        List<String> providers = mLocationManager.getAllProviders();
+//        LocationManager mLocationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = locationManager.getAllProviders();
         Location bestLocation = null;
         for (String provider : providers) {
             Location l = null;
             if (checkPermission()) {
-                l = mLocationManager.getLastKnownLocation(provider);
+                l = locationManager.getLastKnownLocation(provider);
             }
             if (l == null) {
                 Log.d(DBG, "continue");
@@ -505,8 +508,8 @@ public class RetailerMapFragment extends Fragment {
     private boolean checkPermission() {
         Log.d(DBG, "checkPermission()");
         // Ask for permission if it wasn't granted yet
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getContext(), "Location access permission is denied!", Toast.LENGTH_SHORT).show();
+        if (ActivityCompat.checkSelfPermission((Activity) mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText((Activity) mContext, "Location access permission is denied!", Toast.LENGTH_SHORT).show();
             Log.e(ERR, "Location access permission is denied!");
             return false;
         } else {
@@ -587,6 +590,7 @@ public class RetailerMapFragment extends Fragment {
                 Thread newPost = new Thread(new Runnable() {
                     public void run() {
                         try {
+                            // FIXME 60s to update the location
                             Thread.sleep(10000);
                             updateRetailerLocation();
                         } catch (InterruptedException e) {

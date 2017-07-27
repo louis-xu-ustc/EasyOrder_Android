@@ -1,5 +1,6 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -60,6 +61,7 @@ public class CustomerPaymentFragment extends Fragment {
     private TextView totalPrice;
 
     private Long notificationTimestamp = 0L;
+    private Context mContext;
 
     public CustomerPaymentFragment() {
         // Required empty public constructor
@@ -102,6 +104,7 @@ public class CustomerPaymentFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.customer_fragment_payment, container, false);
 
+        mContext = getContext();
         mListView = (ListView) rootView.findViewById(R.id.customer_order_detail_list);
         totalPrice = (TextView) rootView.findViewById(R.id.customer_order_detail_total_price);
         dishAdapter = new CustomerOrderDetailAdapter(getContext(), R.layout.customer_order_detail_list_view, dishArrayList);
@@ -228,12 +231,13 @@ public class CustomerPaymentFragment extends Fragment {
                         String content = response.getString("content");
                         Long timestamp = response.getLong("modified_at");
                         notificationTimestamp = timestamp;
+
 //                        NotificationCompat.Builder mBuilder =
-//                                new NotificationCompat.Builder(getContext())
+//                                new NotificationCompat.Builder((Activity)mContext)
 //                                        .setContentTitle("Meal Going Away")
 //                                        .setContentText(content);
 //                        NotificationManager mNotifyMgr =
-//                                (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
+//                                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
 //                        mNotifyMgr.notify(0, mBuilder.build());
                     }
                 } catch (JSONException eJson) {
@@ -243,7 +247,8 @@ public class CustomerPaymentFragment extends Fragment {
                 Thread newPoll = new Thread(new Runnable() {
                     public void run() {
                         try {
-                            Thread.sleep(10000);
+                            // FIXME 60s to check notification
+                            Thread.sleep(60000);
                             pollNotification();
                         } catch (InterruptedException e) {
                             Log.d(DBG, e.getMessage());
@@ -260,7 +265,7 @@ public class CustomerPaymentFragment extends Fragment {
             URL += "/";
         }
 
-        RESTAPI.getInstance(getActivity().getApplicationContext())
+        RESTAPI.getInstance((Activity) mContext)
                 .makeRequest(URL,
                         Request.Method.GET,
                         null,

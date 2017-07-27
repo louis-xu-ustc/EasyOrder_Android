@@ -144,7 +144,6 @@ public class CustomerMainActivity extends AppCompatActivity implements
             case R.id.customer_setting_profile_button:
                 Intent customerProfile = new Intent(CustomerMainActivity.this, CustomerProfileActivity.class);
                 startActivity(customerProfile);
-                finish();
                 return true;
             case R.id.customer_setting_logout_button:
                 // TODO
