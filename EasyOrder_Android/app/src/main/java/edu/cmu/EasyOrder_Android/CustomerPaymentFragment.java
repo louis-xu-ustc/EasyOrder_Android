@@ -2,6 +2,7 @@ package edu.cmu.EasyOrder_Android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,10 +16,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.braintreepayments.api.dropin.DropInActivity;
 import com.braintreepayments.api.dropin.DropInRequest;
+import com.braintreepayments.api.dropin.DropInResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,6 +58,7 @@ public class CustomerPaymentFragment extends Fragment {
     private ArrayList<Dish> dishArrayList;
     private Order order;
     private TextView totalPrice;
+    private Button customerPayButton;
 
     private Long notificationTimestamp = 0L;
     private Context mContext;
@@ -103,10 +108,8 @@ public class CustomerPaymentFragment extends Fragment {
         mListView = (ListView) rootView.findViewById(R.id.customer_order_detail_list);
         totalPrice = (TextView) rootView.findViewById(R.id.customer_order_detail_total_price);
         dishAdapter = new CustomerOrderDetailAdapter(getContext(), R.layout.customer_order_detail_list_view, dishArrayList);
-        mListView.setAdapter(dishAdapter);
         fetchOrderDetail();
-
-        Button customerPayButton = (Button) rootView.findViewById(R.id.customer_pay_button);
+        customerPayButton = (Button) rootView.findViewById(R.id.customer_pay_button);
         customerPayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -139,6 +142,53 @@ public class CustomerPaymentFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Utils.REQUEST_PAYMENT_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
+                postPaymentNonce(result.getPaymentMethodNonce().getNonce());
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // the user canceled
+                Toast.makeText(getContext(), "User Cancelled Transaction", Toast.LENGTH_SHORT).show();
+            } else {
+                // handle errors here, an exception may be available in
+                Exception error = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
+                Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void postPaymentNonce(String nonce) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Long id = pref.getLong(PREFERENCE_TWITTER_USER_ID, 0);
+        String twitterID = id.toString();
+
+        JSONObject input = new JSONObject();
+        try {
+            input.put("user_id", twitterID);
+            input.put("payment_method_nonce", nonce);
+        } catch (JSONException eJson) {
+            Log.d("Post Payment Nonce", "Json input parse error");
+        }
+
+        Response.Listener<JSONObject> checkoutCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(getContext(), response.toString(), Toast.LENGTH_SHORT).show();
+                fetchOrderDetail();
+                customerPayButton.setEnabled(false);
+            }
+        };
+
+        RESTAPI.getInstance(getContext())
+                .makeRequest(Utils.API_BASE + "/payment/checkout/android/",
+                        Request.Method.POST,
+                        input,
+                        checkoutCallback,
+                        null);
     }
 
     /**
@@ -177,6 +227,7 @@ public class CustomerPaymentFragment extends Fragment {
 
                     totalPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(order.getTotalPrice())).toString());
                     dishAdapter.notifyDataSetChanged();
+                    mListView.setAdapter(dishAdapter);
                 } catch (JSONException eJson) {
                     Log.d("Customer Tab 3", eJson.getMessage());
                 }
@@ -213,7 +264,7 @@ public class CustomerPaymentFragment extends Fragment {
 
     private void popupPayment(String token) {
         DropInRequest dropInRequest = new DropInRequest().clientToken(token);
-        getActivity().startActivityForResult(dropInRequest.getIntent(getContext()), Utils.REQUEST_PAYMENT_REQUEST_CODE);
+        startActivityForResult(dropInRequest.getIntent(getContext()), Utils.REQUEST_PAYMENT_REQUEST_CODE);
     }
 
     private void pollNotification() {
