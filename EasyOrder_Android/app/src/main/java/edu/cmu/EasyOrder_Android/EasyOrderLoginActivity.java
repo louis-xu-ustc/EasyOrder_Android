@@ -29,6 +29,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.User;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
+import twitter4j.conf.ConfigurationBuilder;
 
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_ACCESS_TOKEN;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_ACCESS_TOKEN_SECRET;
@@ -53,9 +54,9 @@ public class EasyOrderLoginActivity extends Activity {
     private SharedPreferences pref;
 
     private Twitter twitter;
-    private RequestToken requestToken;
+    private RequestToken requestToken = null;
     private AccessToken accessToken;
-    private String oauth_url, oauth_verifier;
+    private String oauth_url = "", oauth_verifier = "";
 
     private Button retailerLoginButton, customerLoginButton;
     private boolean isRetailerLoginButtonClicked, isCustomerLoginButtonClicked;
@@ -73,8 +74,14 @@ public class EasyOrderLoginActivity extends Activity {
         edit.putString("CONSUMER_SECRET", TWITTER_CONSUMER_SECRET);
         edit.commit();
 
-        twitter = new TwitterFactory().getInstance();
-        twitter.setOAuthConsumer(pref.getString("CONSUMER_KEY", ""), pref.getString("CONSUMER_SECRET", ""));
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(true)
+                .setOAuthConsumerKey(pref.getString("CONSUMER_KEY", ""))
+                .setOAuthConsumerSecret(pref.getString("CONSUMER_SECRET", ""))
+                .setOAuthAccessToken(null)
+                .setOAuthAccessTokenSecret(null);
+        TwitterFactory tf = new TwitterFactory(cb.build());
+        twitter = tf.getInstance();
 
         retailerLoginButton = (Button) findViewById(R.id.retailer_login_button);
         customerLoginButton = (Button) findViewById(R.id.customer_login_button);
@@ -215,7 +222,7 @@ public class EasyOrderLoginActivity extends Activity {
             Toast.makeText(this.getApplicationContext(), "retailer login successful, further operations\n" +
                     "user ID: " + userID + "\n" +
                     "user name: " + userName + "\n" +
-                    "screen name: " + userScreenName, Toast.LENGTH_LONG).show();
+                    "screen name: " + userScreenName, Toast.LENGTH_SHORT).show();
 
             // make sure intent starts after toast finishes
             final Intent retailerIntent = new Intent(getApplicationContext(), RetailerMainActivity.class);
@@ -241,7 +248,7 @@ public class EasyOrderLoginActivity extends Activity {
             Toast.makeText(this.getApplicationContext(), "customer login successful, further operations\n" +
                     "user ID: " + userID + "\n" +
                     "user name: " + userName + "\n" +
-                    "screen name: " + userScreenName, Toast.LENGTH_LONG).show();
+                    "screen name: " + userScreenName, Toast.LENGTH_SHORT).show();
 
             // make sure intent starts after toast finishes
             final Intent customerIntent = new Intent(getApplicationContext(), CustomerMainActivity.class);

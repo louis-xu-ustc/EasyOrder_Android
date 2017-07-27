@@ -1,10 +1,8 @@
 package edu.cmu.EasyOrder_Android;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,10 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-
-import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 /**
  * A simple {@link Fragment} subclass.

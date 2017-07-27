@@ -30,6 +30,7 @@ import com.braintreepayments.api.dropin.DropInResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 public class CustomerMainActivity extends AppCompatActivity implements
@@ -146,9 +147,11 @@ public class CustomerMainActivity extends AppCompatActivity implements
                 startActivity(customerProfile);
                 return true;
             case R.id.customer_setting_logout_button:
-                // TODO
-                Toast.makeText(CustomerMainActivity.this, "Log out of customer account, " +
-                        "further operations to handle authentication data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CustomerMainActivity.this, "Log out of customer account", Toast.LENGTH_SHORT).show();
+                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor edit = pref.edit();
+                edit.putBoolean(PREFERENCE_TWITTER_LOGGED_IN, false);
+                edit.apply();
                 finish();
                 return true;
             default:
