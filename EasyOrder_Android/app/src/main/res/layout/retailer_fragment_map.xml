@@ -18,6 +18,8 @@
                 android:id="@+id/retailer_search_location_text"
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:inputType="text"
                 android:layout_weight="7" />
 
             <Button
