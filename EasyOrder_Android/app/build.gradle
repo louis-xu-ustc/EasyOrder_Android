@@ -28,6 +28,9 @@ android {
 
             it.buildConfigField 'String', 'ACCESS_TOKEN_SECRET', ACCESS_TOKEN_SECRET
             it.resValue 'string', 'ACCESS_TOKEN_SECRET', ACCESS_TOKEN_SECRET
+
+            it.buildConfigField'String', 'GOOGLE_MAP_API', GOOGLE_MAP_API
+            it.resValue'string', 'GOOGLE_MAP_API', GOOGLE_MAP_API
         }
     }
 }

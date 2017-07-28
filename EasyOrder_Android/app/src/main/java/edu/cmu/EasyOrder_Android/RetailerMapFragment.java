@@ -621,20 +621,21 @@ public class RetailerMapFragment extends Fragment {
 
         Location curLocation = getLastKnownLocation();
 
-        JSONObject input = new JSONObject();
-        try {
-            input.put("latitude", curLocation.getLatitude());
-            input.put("longitude", curLocation.getLongitude());
-        } catch (JSONException eJson) {
-            Log.d("Retailer Tab 2", "Post location input json parse error");
+        if (curLocation != null) {
+            JSONObject input = new JSONObject();
+            try {
+                input.put("latitude", curLocation.getLatitude());
+                input.put("longitude", curLocation.getLongitude());
+            } catch (JSONException eJson) {
+                Log.d("Retailer Tab 2", "Post location input json parse error");
+            }
+            RESTAPI.getInstance(getContext())
+                    .makeRequest(Utils.API_BASE + "/current_location/",
+                            Request.Method.PUT,
+                            input,
+                            locationCallback,
+                            null);
         }
-
-        RESTAPI.getInstance(getContext())
-                .makeRequest(Utils.API_BASE + "/current_location/",
-                        Request.Method.PUT,
-                        input,
-                        locationCallback,
-                        null);
     }
 
     /**
@@ -707,7 +708,7 @@ public class RetailerMapFragment extends Fragment {
                         null);
     }
 
-    public String getAddress(double lat, double lng) {
+    private String getAddress(double lat, double lng) {
         String address = null;
         Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
         try {

@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import static edu.cmu.EasyOrder_Android.Utils.PICKUP_LOCATION_ETA_INIT_VAL;
+
 /**
  * Created by yunpengx on 7/8/17.
  */
@@ -33,11 +35,16 @@ public class CustomerPickupLocationListAdapter extends ArrayAdapter<PickupLocati
         PickupLocation pickupLocation = pickupLocationArrayList.get(pos);
 
         TextView location = (TextView) v.findViewById(R.id.customer_pickup_location);
-        location.setText(pickupLocation.getLocaiton());
+        location.setText(String.valueOf(pos) + ". " + pickupLocation.getLocaiton());
 
         TextView ETA = (TextView) v.findViewById(R.id.customer_pickup_location_ETA);
-        ETA.setText(String.valueOf(pickupLocation.getETA()));
-
+        double eta = pickupLocation.getETA();
+        String display = String.format("%.2f", eta);
+        if (eta == PICKUP_LOCATION_ETA_INIT_VAL) {
+            ETA.setText(new StringBuilder().append("N/A"));
+        } else {
+            ETA.setText(new StringBuilder().append(display).append(" min"));
+        }
         return v;
     }
 }
