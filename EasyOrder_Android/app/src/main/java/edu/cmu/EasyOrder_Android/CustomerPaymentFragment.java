@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
@@ -67,6 +68,8 @@ public class CustomerPaymentFragment extends Fragment {
 
     private Long notificationTimestamp = 0L;
     private Context mContext;
+    private Boolean mHasPaid = false;
+    private Boolean mCurPollingNotification = false;
 
     public CustomerPaymentFragment() {
         // Required empty public constructor
@@ -100,7 +103,6 @@ public class CustomerPaymentFragment extends Fragment {
 
         order = new Order();
         dishArrayList = new ArrayList<>();
-        pollNotification();
     }
 
     @Override
@@ -214,7 +216,6 @@ public class CustomerPaymentFragment extends Fragment {
         Response.Listener<JSONArray> orderCallback = new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                boolean isOrderEmpty = true;
                 try {
                     // must use the same dishArrayList, otherwise notifyDatasetChanged cannot be useful
                     dishArrayList.clear();
@@ -228,15 +229,23 @@ public class CustomerPaymentFragment extends Fragment {
                         curDish.setQuantity(curOrder.getInt("amount"));
                         dishArrayList.add(curDish);
                         order.addDish(curDish);
-                        isOrderEmpty = false;
                     }
 
                     totalPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(order.getTotalPrice())).toString());
                     dishAdapter.notifyDataSetChanged();
                     mListView.setAdapter(dishAdapter);
-                    if (isOrderEmpty) {
+
+                    mHasPaid = (dishArrayList.size() == 0);
+                    if (!mHasPaid) {
+                        customerPayButton.setEnabled(true);
+                        if (!mCurPollingNotification) {
+                            mCurPollingNotification = true;
+                            pollNotification();
+                        }
+                    } else {
                         customerPayButton.setEnabled(false);
                     }
+
                 } catch (JSONException eJson) {
                     Log.d("Customer Tab 3", eJson.getMessage());
                 }
@@ -314,18 +323,22 @@ public class CustomerPaymentFragment extends Fragment {
                     Log.d("Customer Tab 3", "Json Parse Error");
                 }
 
-                Thread newPoll = new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            // FIXME 60s to check notification
-                            Thread.sleep(60000);
-                            pollNotification();
-                        } catch (InterruptedException e) {
-                            Log.d(DBG, e.getMessage());
+                if (!mHasPaid) {
+                    Thread newPoll = new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                // FIXME 20s to check notification
+                                Thread.sleep(20000);
+                                pollNotification();
+                            } catch (InterruptedException e) {
+                                Log.d(DBG, e.getMessage());
+                            }
                         }
-                    }
-                });
-                newPoll.start();
+                    });
+                    newPoll.start();
+                } else {
+                    mCurPollingNotification = false;
+                }
             }
         };
 
