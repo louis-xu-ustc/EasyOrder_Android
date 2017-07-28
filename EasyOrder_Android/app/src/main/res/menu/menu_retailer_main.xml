@@ -6,7 +6,7 @@
     <item
         android:id="@+id/retailer_geofence_switch_button"
         android:checkable="true"
-        android:icon="@android:drawable/ic_menu_add"
+        android:icon="@android:drawable/ic_menu_directions"
         android:title="GEO"
         android:titleCondensed="GEO"
         app:showAsAction="always|withText" />

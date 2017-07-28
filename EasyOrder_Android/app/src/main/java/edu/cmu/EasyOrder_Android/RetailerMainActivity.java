@@ -39,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import static android.R.drawable.ic_menu_add;
+import static android.R.drawable.ic_menu_compass;
 import static android.R.drawable.ic_menu_delete;
+import static android.R.drawable.ic_menu_directions;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
 
 public class RetailerMainActivity extends AppCompatActivity implements
@@ -170,7 +172,7 @@ public class RetailerMainActivity extends AppCompatActivity implements
                 } else {
                     Toast.makeText(getApplicationContext(), "GeoLocation Off Button is clicked!", Toast.LENGTH_SHORT).show();
                     removeGeofencesButtonHandler();
-                    item.setIcon(ic_menu_add);
+                    item.setIcon(ic_menu_directions);
                 }
                 isChecked = !item.isChecked();
                 item.setChecked(isChecked);
