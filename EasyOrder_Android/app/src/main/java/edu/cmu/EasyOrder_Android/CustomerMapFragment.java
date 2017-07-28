@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -29,7 +31,6 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -43,10 +44,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.ERR;
+import static edu.cmu.EasyOrder_Android.Utils.GOOGLE_MAP_API;
+import static edu.cmu.EasyOrder_Android.Utils.MAX_PICKUP_LOCATION_DISPLAY;
+import static edu.cmu.EasyOrder_Android.Utils.PICKUP_LOCATION_ETA_INIT_VAL;
 import static edu.cmu.EasyOrder_Android.Utils.REQUEST_PERMISSIONS_REQUEST_CODE;
+import static edu.cmu.EasyOrder_Android.Utils.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -72,6 +80,11 @@ public class CustomerMapFragment extends Fragment {
     private MapView mMapView;
     private GoogleMap googleMap;
     private EditText mQuery;
+    private Context mContext;
+
+    private ArrayAdapter pickupLocationAdapter;
+    private ListView mListView;
+    ArrayList<PickupLocation> pickupLocationArrayList;
 
     private ArrayAdapter<Address> mAdapter;
     private LatLng targetLatLng;
@@ -105,6 +118,8 @@ public class CustomerMapFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        pickupLocationArrayList = new ArrayList<>();
+        fetchPickupLocationsInfo();
     }
 
     @Override
@@ -113,9 +128,14 @@ public class CustomerMapFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.customer_fragment_map, container, false);
 
+        // pickup locations
+        mListView = (ListView) v.findViewById(R.id.customer_pickup_location_list);
+        mContext = getContext();
+        pickupLocationAdapter = new CustomerPickupLocationListAdapter(mContext, R.layout.customer_pickup_location_list_view, pickupLocationArrayList);
+
         // Initialize Google Map
         locationManager =
-                (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         mMapView = (MapView) v.findViewById(R.id.customer_mapView);
         mMapView.onCreate(savedInstanceState);
@@ -127,6 +147,9 @@ public class CustomerMapFragment extends Fragment {
             Toast.makeText(getActivity(), "Map View Initialization Error", Toast.LENGTH_SHORT).show();
             return v;
         }
+
+        // start to update the
+        getRetailerLocation();
 
         // Set Google Map Focus on current Location first
         mMapView.getMapAsync(new OnMapReadyCallback() {
@@ -148,9 +171,9 @@ public class CustomerMapFragment extends Fragment {
                 }
 
                 // For zooming automatically to the location of the marker
-                LatLng curLatLng = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(curLatLng).zoom(12).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+//                LatLng curLatLng = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
+//                CameraPosition cameraPosition = new CameraPosition.Builder().target(curLatLng).zoom(12).build();
+//                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
             }
         });
@@ -197,66 +220,95 @@ public class CustomerMapFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private class searchETA extends AsyncTask<String, Void, JSONObject> {
+    private void updateETA(LatLng curLatLng) {
+        new searchETA().execute(curLatLng);
+        // move and zoom google map to show all markers
+        MarkerOptions targetMarker;
+        MarkerOptions curMarker = new MarkerOptions().title("Current Retailer Location").position(curLatLng).icon(BitmapDescriptorFactory
+                .defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        googleMap.clear();
+        googleMap.addMarker(curMarker);
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        builder.include(curLatLng);
+        for (int i = 0; i < pickupLocationArrayList.size(); i++) {
+            LatLng targetLatLng = new LatLng(pickupLocationArrayList.get(i).getLatitude(), pickupLocationArrayList.get(i).getLongitude());
+            builder.include(targetLatLng);
+            targetMarker = new MarkerOptions().title("Pickup Location: " + String.valueOf(i)).position(targetLatLng).icon(BitmapDescriptorFactory
+                    .defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            googleMap.addMarker(targetMarker);
+        }
+        LatLngBounds bounds = builder.build();
+        int padding = 200; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        googleMap.animateCamera(cu);
+    }
+
+    private class searchETA extends AsyncTask<LatLng, Void, List<JSONObject>> {
         @Override
-        protected JSONObject doInBackground(String... params) {
+        protected List<JSONObject> doInBackground(LatLng... params) {
+            List<JSONObject> list = new ArrayList<>();
+            LatLng currLatLng = params[0];
 
-            JSONObject etaJson;
-            try {
-                etaJson = getJSONObjectFromURL(params[0]);
+            for (int i = 0; i < pickupLocationArrayList.size(); i++) {
+                PickupLocation pickupLocation = pickupLocationArrayList.get(i);
+                Location targetLocation = pickupLocation.getLatLngLocation();
+                //Log.d(DBG, "target " + String.valueOf(i) + " lat: " + String.valueOf(targetLocation.getLatitude()) + " lng: " + String.valueOf(targetLocation.getLongitude()));
+                String QueryString = String.format("https://maps.googleapis.com/maps/api/directions/json?origin=%f,%f&destination=%f,%f&key=%s",
+                        currLatLng.latitude, currLatLng.longitude,
+                        targetLocation.getLatitude(), targetLocation.getLongitude(),
+                        GOOGLE_MAP_API);
 
-            } catch (IOException eIO) {
-                Log.d("Second View", "Search ETA IO Error");
-                return null;
-            } catch (JSONException eJson) {
-                Log.d("Second View", "Search ETA return value not Json");
-                return null;
+                try {
+                    JSONObject etaJson = getJSONObjectFromURL(QueryString);
+                    //Log.d(DBG, etaJson.toString());
+                    list.add(etaJson);
+                } catch (IOException eIO) {
+                    Log.d("Second View", "Search ETA IO Error");
+                } catch (JSONException eJson) {
+                    Log.d("Second View", "Search ETA return value not Json");
+                }
             }
 
-            return etaJson;
+            Log.d(DBG, "finish doInBackground with " + String.valueOf(list.size()) + " items filled");
+            return list;
         }
 
         @Override
-        protected void onPostExecute(JSONObject jsonObject) {
-            if (jsonObject == null) {
+        protected void onPostExecute(List<JSONObject> jsonObjectList) {
+            if (jsonObjectList == null || jsonObjectList.isEmpty()) {
                 Log.d("Second View", "Search ETA no value returned");
                 return;
             }
 
-            int driveDistance = 0;
-            try {
-                JSONArray routes = jsonObject.getJSONArray("routes");
-                if (routes.length() == 0) {
-                    return;
+            for (int i = 0; i < jsonObjectList.size(); i++) {
+                try {
+                    double driveMins = 0.0;
+                    JSONArray routes = jsonObjectList.get(i).getJSONArray("routes");
+                    if (routes.length() == 0) {
+                        Log.d(DBG, "no routes found!");
+
+                        //Log.d(DBG, "set eta: " + String.valueOf(driveMins));
+                        PickupLocation updatedLoc = pickupLocationArrayList.get(i);
+                        updatedLoc.setETA(driveMins);
+                        pickupLocationArrayList.set(i, updatedLoc);
+                        continue;
+                    }
+                    JSONArray legs = ((JSONObject) routes.get(0)).getJSONArray("legs");
+                    int driveDistance = ((JSONObject) legs.get(0)).getJSONObject("distance").getInt("value");
+
+                    // calculate duration with assumption of driving at 40 miles/hr
+                    driveMins = (double) driveDistance / 1609.344 / 40 * 60;
+                    //Log.d(DBG, "set eta: " + String.valueOf(driveMins));
+                    PickupLocation updatedLoc = pickupLocationArrayList.get(i);
+                    updatedLoc.setETA(driveMins);
+                    pickupLocationArrayList.set(i, updatedLoc);
+                } catch (JSONException eJson) {
+                    eJson.printStackTrace();
                 }
-                JSONArray legs = ((JSONObject)routes.get(0)).getJSONArray("legs");
-                driveDistance = ((JSONObject)legs.get(0)).getJSONObject("distance").getInt("value");
-            } catch (JSONException eJson) {
-                return;
             }
-
-            // calculate duration with assumption of driving at 40 miles/hr
-            double driveHours = (double)driveDistance / 1609.344 / 40;
-            String eta = String.format("%d Hr %d Min", (int)driveHours, (int)((driveHours - (int)driveHours) * 60));
-            float[] distance = new float[1];
-            Location.distanceBetween(curLocation.getLatitude(), curLocation.getLongitude(),
-                    targetLatLng.latitude, targetLatLng.longitude, distance);
-
-            // place marker for current location
-            String curMarkerTitle = String.format("%.2f miles - %s", distance[0] / 1609.344, eta);
-            LatLng curLatLng = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
-            MarkerOptions curMarker = new MarkerOptions().title(curMarkerTitle).position(curLatLng).icon(BitmapDescriptorFactory
-                    .defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-            googleMap.addMarker(curMarker);
-
-            // move and zoom google map to show all markers
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(curLatLng);
-            builder.include(targetLatLng);
-            LatLngBounds bounds = builder.build();
-            int padding = 300; // offset from edges of the map in pixels
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            googleMap.animateCamera(cu);
+            pickupLocationAdapter.notifyDataSetChanged();
+            mListView.setAdapter(pickupLocationAdapter);
+            Log.d(TAG, "Time to update ETA!");
         }
     }
 
@@ -267,12 +319,12 @@ public class CustomerMapFragment extends Fragment {
         // urlConnection.connect();
         int a = urlConnection.getResponseCode();
 
-        BufferedReader br=new BufferedReader(new InputStreamReader(url.openStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = br.readLine()) != null) {
-            sb.append(line+"\n");
+            sb.append(line + "\n");
         }
         br.close();
 
@@ -298,7 +350,7 @@ public class CustomerMapFragment extends Fragment {
     private void askPermission() {
         Log.d(DBG, "askPermission()");
         ActivityCompat.requestPermissions(
-               getActivity(),
+                getActivity(),
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_PERMISSIONS_REQUEST_CODE
         );
@@ -325,17 +377,31 @@ public class CustomerMapFragment extends Fragment {
         Response.Listener<JSONObject> locationCallback = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-
                 try {
                     double lat = response.getDouble("latitude");
                     double lng = response.getDouble("longitude");
-                    LatLng retailerLatLng = new LatLng(lat, lng);
-
-                    // TODO: update ETAs
+                    LatLng currRetailerLatLng = new LatLng(lat, lng);
+                    Log.d(DBG, "curr lat: " + String.valueOf(lat) + " lng: " + String.valueOf(lng));
+                    updateETA(currRetailerLatLng);
 
                 } catch (JSONException eJson) {
-                    Log.d("Customer Tab 2", "Get retailer location response parse json error");
+                    Log.d(DBG, eJson.getMessage());
                 }
+
+                Thread newGet = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // FIXME 20s to update the location
+                            Thread.sleep(20000);
+                            getRetailerLocation();
+                        } catch (InterruptedException e) {
+                            Log.d(DBG, e.getMessage());
+                        }
+                    }
+
+                });
+                newGet.start();
             }
         };
 
@@ -346,4 +412,62 @@ public class CustomerMapFragment extends Fragment {
                         locationCallback,
                         null);
     }
+
+    /**
+     * fetch all pickup locations from the server
+     */
+    private void fetchPickupLocationsInfo() {
+        Response.Listener<JSONArray> pickupLocationCallback = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    pickupLocationArrayList.clear();
+                    // only display the latest three pickup locations
+                    int displayLimit = Math.min(response.length(), MAX_PICKUP_LOCATION_DISPLAY);
+                    for (int i = response.length() - 1, cnt = 0; i >= 0; i--, cnt++) {
+                        if (cnt >= displayLimit) break;
+                        JSONObject curPickupLocation = (JSONObject) response.get(i);
+                        PickupLocation location = new PickupLocation();
+                        double lat = curPickupLocation.getDouble("latitude");
+                        double lng = curPickupLocation.getDouble("longitude");
+                        String addr = getAddress(lat, lng);
+                        location.setLatitude(lat);
+                        location.setLongitude(lng);
+                        location.setLocation(addr);
+                        // will keep updating in getRetailerLocation
+                        location.setETA(PICKUP_LOCATION_ETA_INIT_VAL);
+                        pickupLocationArrayList.add(location);
+                    }
+                    pickupLocationAdapter.notifyDataSetChanged();
+                    mListView.setAdapter(pickupLocationAdapter);
+                    Log.d(DBG, "fetch Pickup Locations Info finished with " + String.valueOf(pickupLocationArrayList.size()) + " items filled");
+                } catch (JSONException eJson) {
+                    Log.d("Retailer Tab 2", eJson.getMessage());
+                }
+            }
+        };
+
+        RESTAPI.getInstance(getActivity().getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/pickup_locations/",
+                        Request.Method.GET,
+                        null,
+                        pickupLocationCallback,
+                        null);
+    }
+
+    private String getAddress(double lat, double lng) {
+        String address = null;
+        Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            Address obj = addresses.get(0);
+            address = obj.getAddressLine(0);
+            Log.d(TAG, "Address" + address);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return address;
+    }
+
 }

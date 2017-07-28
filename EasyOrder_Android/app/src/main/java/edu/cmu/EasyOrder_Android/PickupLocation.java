@@ -1,5 +1,8 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.location.Location;
+import android.location.LocationManager;
+
 /**
  * Created by yunpengx on 7/27/17.
  */
@@ -40,6 +43,13 @@ public class PickupLocation {
 
     public void setETA(double ETA) {
         this.ETA = ETA;
+    }
+
+    public Location getLatLngLocation () {
+        Location loc = new Location(LocationManager.GPS_PROVIDER);
+        loc.setLatitude(this.latitude);
+        loc.setLongitude(this.longitude);
+        return loc;
     }
 
     @Override

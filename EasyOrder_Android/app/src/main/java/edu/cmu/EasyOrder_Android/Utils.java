@@ -9,6 +9,7 @@ public class Utils {
     public static final String TWITTER_CONSUMER_SECRET = BuildConfig.CONSUMER_SECRET;
     public static final String TWITTER_ACCESS_TOKEN = BuildConfig.ACCESS_TOKEN;
     public static final String TWITTER_ACCESS_TOKEN_SECRET = BuildConfig.ACCESS_TOKEN_SECRET;
+    public static final String GOOGLE_MAP_API = BuildConfig.GOOGLE_MAP_API;
 
     public static String PREFERENCE_TWITTER_LOGGED_IN = "TWITTER_LOGGED_IN";
     public static String PREFERENCE_TWITTER_ACCESS_TOKEN = "ACCESS_TOKEN";
@@ -22,6 +23,7 @@ public class Utils {
     public static final int REQUEST_PAYMENT_REQUEST_CODE = 1012;
     public static final int ADD_DISH_POST = 1024;
     public static final int MAX_PICKUP_LOCATION_DISPLAY = 3;
+    public static final double PICKUP_LOCATION_ETA_INIT_VAL = -1;
     public static final String TAG = "TAG";
     public static final String DBG = "DBG";
     public static final String ERR = "ERR";
