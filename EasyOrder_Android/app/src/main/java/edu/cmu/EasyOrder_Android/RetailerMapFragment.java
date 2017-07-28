@@ -607,8 +607,8 @@ public class RetailerMapFragment extends Fragment {
                 Thread newPost = new Thread(new Runnable() {
                     public void run() {
                         try {
-                            // FIXME 60s to update the location
-                            Thread.sleep(60000);
+                            // FIXME 20s to update the location
+                            Thread.sleep(20000);
                             updateRetailerLocation();
                         } catch (InterruptedException e) {
                             Log.d(DBG, e.getMessage());

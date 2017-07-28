@@ -7,7 +7,7 @@
     <item
         android:id="@+id/customer_setting_profile_button"
         android:alphabeticShortcut="+"
-        android:icon="@android:drawable/ic_menu_info_details"
+        android:icon="@drawable/ic_person_white_24dp"
         android:title="profile"
         android:titleCondensed="profile"
         app:showAsAction="always|withText">
@@ -17,7 +17,7 @@
     <item
         android:id="@+id/customer_setting_logout_button"
         android:alphabeticShortcut="-"
-        android:icon="@android:drawable/ic_menu_more"
+        android:icon="@drawable/ic_exit_to_app_white_24dp"
         android:title="logout"
         android:titleCondensed="profile"
         app:showAsAction="always|withText">

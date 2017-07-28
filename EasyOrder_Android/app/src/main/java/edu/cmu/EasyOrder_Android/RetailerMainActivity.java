@@ -166,13 +166,13 @@ public class RetailerMainActivity extends AppCompatActivity implements
         switch (id) {
             case R.id.retailer_geofence_switch_button:
                 if (!isChecked) {
-                    Toast.makeText(getApplicationContext(), "GeoLocation On Button is clicked!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "GeoLocation On", Toast.LENGTH_SHORT).show();
                     addGeofencesButtonHandler();
-                    item.setIcon(ic_menu_delete);
+                    item.setIcon(R.drawable.ic_location_off_white_24dp);
                 } else {
-                    Toast.makeText(getApplicationContext(), "GeoLocation Off Button is clicked!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "GeoLocation Off", Toast.LENGTH_SHORT).show();
                     removeGeofencesButtonHandler();
-                    item.setIcon(ic_menu_directions);
+                    item.setIcon(R.drawable.ic_location_on_white_24dp);
                 }
                 isChecked = !item.isChecked();
                 item.setChecked(isChecked);

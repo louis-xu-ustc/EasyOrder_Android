@@ -6,7 +6,7 @@
     <item
         android:id="@+id/retailer_geofence_switch_button"
         android:checkable="true"
-        android:icon="@android:drawable/ic_menu_directions"
+        android:icon="@drawable/ic_location_on_white_24dp"
         android:title="GEO"
         android:titleCondensed="GEO"
         app:showAsAction="always|withText" />
@@ -14,7 +14,7 @@
     <item
         android:id="@+id/retailer_setting_profile_button"
         android:alphabeticShortcut="+"
-        android:icon="@android:drawable/ic_menu_info_details"
+        android:icon="@drawable/ic_person_white_24dp"
         android:title="profile"
         android:titleCondensed="profile"
         app:showAsAction="always|withText"></item>
@@ -22,7 +22,7 @@
     <item
         android:id="@+id/retailer_setting_logout_button"
         android:alphabeticShortcut="-"
-        android:icon="@android:drawable/ic_menu_more"
+        android:icon="@drawable/ic_exit_to_app_white_24dp"
         android:title="logout"
         android:titleCondensed="profile"
         app:showAsAction="always|withText"></item>
