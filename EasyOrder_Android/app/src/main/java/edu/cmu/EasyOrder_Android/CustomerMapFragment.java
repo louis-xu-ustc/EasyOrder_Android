@@ -85,6 +85,7 @@ public class CustomerMapFragment extends Fragment {
     private ArrayAdapter pickupLocationAdapter;
     private ListView mListView;
     ArrayList<PickupLocation> pickupLocationArrayList;
+    private boolean mHasMapAnimated;
 
     private ArrayAdapter<Address> mAdapter;
     private LatLng targetLatLng;
@@ -149,6 +150,7 @@ public class CustomerMapFragment extends Fragment {
         }
 
         // start to update the
+        mHasMapAnimated = false;
         getRetailerLocation();
 
         // Set Google Map Focus on current Location first
@@ -237,10 +239,14 @@ public class CustomerMapFragment extends Fragment {
                     .defaultMarker(BitmapDescriptorFactory.HUE_RED));
             googleMap.addMarker(targetMarker);
         }
-        LatLngBounds bounds = builder.build();
-        int padding = 200; // offset from edges of the map in pixels
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-        googleMap.animateCamera(cu);
+
+        if (!mHasMapAnimated) {
+            LatLngBounds bounds = builder.build();
+            int padding = 200; // offset from edges of the map in pixels
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            googleMap.animateCamera(cu);
+            mHasMapAnimated = true;
+        }
     }
 
     private class searchETA extends AsyncTask<LatLng, Void, List<JSONObject>> {
