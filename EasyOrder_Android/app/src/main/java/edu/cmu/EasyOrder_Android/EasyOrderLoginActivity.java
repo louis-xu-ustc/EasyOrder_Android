@@ -219,10 +219,12 @@ public class EasyOrderLoginActivity extends Activity {
 
             createUserInServer(userID, userName);
 
-            Toast.makeText(this.getApplicationContext(), "retailer login successful, further operations\n" +
-                    "user ID: " + userID + "\n" +
-                    "user name: " + userName + "\n" +
-                    "screen name: " + userScreenName, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this.getApplicationContext(), "retailer login successful, further operations\n" +
+//                    "user ID: " + userID + "\n" +
+//                    "user name: " + userName + "\n" +
+//                    "screen name: " + userScreenName, Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this.getApplicationContext(), "retailer login successful", Toast.LENGTH_SHORT).show();
 
             // make sure intent starts after toast finishes
             final Intent retailerIntent = new Intent(getApplicationContext(), RetailerMainActivity.class);
@@ -245,10 +247,12 @@ public class EasyOrderLoginActivity extends Activity {
 
             createUserInServer(userID, userName);
 
-            Toast.makeText(this.getApplicationContext(), "customer login successful, further operations\n" +
-                    "user ID: " + userID + "\n" +
-                    "user name: " + userName + "\n" +
-                    "screen name: " + userScreenName, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this.getApplicationContext(), "customer login successful, further operations\n" +
+//                    "user ID: " + userID + "\n" +
+//                    "user name: " + userName + "\n" +
+//                    "screen name: " + userScreenName, Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this.getApplicationContext(), "customer login successful", Toast.LENGTH_SHORT).show();
 
             // make sure intent starts after toast finishes
             final Intent customerIntent = new Intent(getApplicationContext(), CustomerMainActivity.class);
