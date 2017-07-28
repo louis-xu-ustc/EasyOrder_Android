@@ -100,6 +100,7 @@ public class CustomerPostFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ArrayList<String> orderedList = new ArrayList<String>();
+                final boolean hasEffectiveOrder = false;
                 for (Dish dish : dishArrayList) {
                     if (dish.getQuantity() > 0) {
                         orderedList.add(dish.toString());
@@ -181,14 +182,16 @@ public class CustomerPostFragment extends Fragment {
 
         JSONObject input = new JSONObject();
         JSONArray orders = new JSONArray();
+        boolean hasEffectiveOrder = false;
         try {
             input.put("twitterID", twitterID);
-            for (Dish dish: dishArrayList) {
+            for (Dish dish : dishArrayList) {
                 if (dish.getQuantity() > 0) {
                     JSONObject jsonDish = new JSONObject();
                     jsonDish.put("dish", dish.getId());
                     jsonDish.put("amount", dish.getQuantity());
                     orders.put(jsonDish);
+                    hasEffectiveOrder = true;
                 }
             }
 
@@ -197,19 +200,33 @@ public class CustomerPostFragment extends Fragment {
             Log.d("Place Order", "json input parse error");
         }
 
+        if (!hasEffectiveOrder) {
+            Toast.makeText(getContext(), "Your Order is empty!", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Response.Listener<JSONObject> placeCallback = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Toast.makeText(getContext(), "Your Order Has Been Placed!", Toast.LENGTH_SHORT).show();
+                // clear all the order info to zero
+                for (int i = 0; i < dishArrayList.size(); i++) {
+                    Dish dish = dishArrayList.get(i);
+                    if (dish.getQuantity() > 0) {
+                        dish.setQuantity(0);
+                        dishArrayList.set(i, dish);
+                    }
+                }
+                dishAdapter.notifyDataSetChanged();
+                mListView.setAdapter(dishAdapter);
             }
         };
-
         RESTAPI.getInstance(getActivity().getApplicationContext())
                 .makeRequest(Utils.API_BASE + "/order/bunch/",
                         Request.Method.POST,
                         input,
                         placeCallback,
                         null);
+
     }
 
     private void fetchDishInfo() {

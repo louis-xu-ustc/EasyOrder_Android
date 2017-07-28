@@ -184,7 +184,6 @@ public class CustomerPaymentFragment extends Fragment {
             public void onResponse(JSONObject response) {
                 Toast.makeText(getContext(), response.toString(), Toast.LENGTH_SHORT).show();
                 fetchOrderDetail();
-                customerPayButton.setEnabled(false);
             }
         };
 
@@ -215,6 +214,7 @@ public class CustomerPaymentFragment extends Fragment {
         Response.Listener<JSONArray> orderCallback = new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
+                boolean isOrderEmpty = true;
                 try {
                     // must use the same dishArrayList, otherwise notifyDatasetChanged cannot be useful
                     dishArrayList.clear();
@@ -228,11 +228,15 @@ public class CustomerPaymentFragment extends Fragment {
                         curDish.setQuantity(curOrder.getInt("amount"));
                         dishArrayList.add(curDish);
                         order.addDish(curDish);
+                        isOrderEmpty = false;
                     }
 
                     totalPrice.setText(new StringBuilder().append("$ ").append(String.valueOf(order.getTotalPrice())).toString());
                     dishAdapter.notifyDataSetChanged();
                     mListView.setAdapter(dishAdapter);
+                    if (isOrderEmpty) {
+                        customerPayButton.setEnabled(false);
+                    }
                 } catch (JSONException eJson) {
                     Log.d("Customer Tab 3", eJson.getMessage());
                 }
