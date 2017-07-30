@@ -146,7 +146,6 @@ public class RetailerMapFragment extends Fragment {
         mListView = (ListView) v.findViewById(R.id.retailer_picking_location_list);
         mContext = getContext();
         pickupLocationAdapter = new RetailerPickupLocationListAdapter(mContext, R.layout.retailer_pickup_location_list_view, pickupLocationArrayList);
-        mListView.setAdapter(pickupLocationAdapter);
 
         // Initialize Google Map
         locationManager =
@@ -216,6 +215,7 @@ public class RetailerMapFragment extends Fragment {
                 }
             }
         });
+        mListView.setAdapter(pickupLocationAdapter);
 
         return v;
     }
