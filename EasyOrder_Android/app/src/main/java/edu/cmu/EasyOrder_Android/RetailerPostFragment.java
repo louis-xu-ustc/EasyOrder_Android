@@ -54,7 +54,7 @@ public class RetailerPostFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
     private ArrayAdapter dishAdapter;
     private ListView mListView;
-    ArrayList<Dish> dishArrayList;
+    private ArrayList<Dish> dishArrayList;
 
     public RetailerPostFragment() {
         // Required empty public constructor

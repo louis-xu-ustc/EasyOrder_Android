@@ -38,10 +38,6 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static android.R.drawable.ic_menu_add;
-import static android.R.drawable.ic_menu_compass;
-import static android.R.drawable.ic_menu_delete;
-import static android.R.drawable.ic_menu_directions;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
 
 public class RetailerMainActivity extends AppCompatActivity implements

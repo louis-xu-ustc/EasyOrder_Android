@@ -1,10 +1,17 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -12,6 +19,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -24,8 +35,27 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
+import twitter4j.StatusUpdate;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.User;
+import twitter4j.auth.AccessToken;
+import twitter4j.auth.RequestToken;
+import twitter4j.conf.ConfigurationBuilder;
+
+import static edu.cmu.EasyOrder_Android.RetailerMapFragment.DISPLAY_UI_DIALOG;
+import static edu.cmu.EasyOrder_Android.RetailerMapFragment.DISPLAY_UI_TOAST;
+import static edu.cmu.EasyOrder_Android.Utils.DBG;
+import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_USER_ID;
 
 
@@ -49,7 +79,17 @@ public class CustomerPostFragment extends Fragment {
 
     private ArrayAdapter dishAdapter;
     private ListView mListView;
-    ArrayList<Dish> dishArrayList;
+    private ArrayList<Dish> dishArrayList;
+
+    private Dialog auth_dialog;
+    private WebView web;
+    private SharedPreferences pref;
+    private Twitter twitter;
+    private RequestToken requestToken;
+    private AccessToken accessToken;
+    private String oauth_url, oauth_verifier, profile_url;
+    private UIHandler uiHandler;
+    private String imageUrl;
 
     public CustomerPostFragment() {
         // Required empty public constructor
@@ -79,6 +119,7 @@ public class CustomerPostFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        pref = PreferenceManager.getDefaultSharedPreferences(getContext());
         dishArrayList = new ArrayList<>();
         fetchDishInfo();
     }
@@ -90,6 +131,38 @@ public class CustomerPostFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.customer_fragment_post, container, false);
         mListView = (ListView) rootView.findViewById(R.id.customer_dish_list);
         dishAdapter = new CustomerDishListAdapter(getContext(), R.layout.customer_dish_list_view, dishArrayList);
+        mListView.setAdapter(dishAdapter);
+
+        mListView.setOnItemLongClickListener(
+                new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+//                        Toast.makeText(getContext(), "click item, id: " + String.valueOf(id) + " pos: " +
+//                                String.valueOf(position), Toast.LENGTH_SHORT).show();
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setCancelable(true);
+                        builder.setTitle("Post Twitter ?");
+                        Dish dish = (Dish) dishAdapter.getItem(position);
+                        imageUrl = Utils.BACKEND_SERVER + dish.getImage();
+                        final String message = "@08723Mapp [Team7] " + dish.getName() + " is really delicious!";
+                        builder.setMessage(message);
+                        builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int which) {
+                                postTwitterMessage(message);
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+                        builder.show();
+                        return true;
+                    }
+                });
 
         ImageButton shoppingCart = (ImageButton) rootView.findViewById(R.id.customer_order_confirm_button);
         View convertView = (View) inflater.inflate(R.layout.customer_shopping_cart_confirm_list, null);
@@ -133,7 +206,7 @@ public class CustomerPostFragment extends Fragment {
                 alert.show();
             }
         });
-        mListView.setAdapter(dishAdapter);
+
         return rootView;
     }
 
@@ -172,6 +245,213 @@ public class CustomerPostFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);
+    }
+
+    private void postTwitterMessage(String message) {
+        if (!pref.getBoolean(PREFERENCE_TWITTER_LOGGED_IN, false)) {
+            new TokenGet().execute(); //no Token obtained, first time use
+        } else {
+            new PostTweet().execute(message); //when Tokens are obtained , ready to Post
+        }
+    }
+
+    private class TokenGet extends AsyncTask<String, String, String> {
+        @Override
+        protected String doInBackground(String... args) {
+            try {
+                requestToken = twitter.getOAuthRequestToken();
+                oauth_url = requestToken.getAuthorizationURL();
+            } catch (TwitterException e) {
+                e.printStackTrace();
+            }
+            return oauth_url;
+        }
+
+        @Override
+        protected void onPostExecute(String oauth_url) {
+            if (oauth_url != null) {
+                auth_dialog = new Dialog(getContext());
+                auth_dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                auth_dialog.setContentView(R.layout.oauth_webview);
+                web = (WebView) auth_dialog.findViewById(R.id.webViewOAuth);
+                web.getSettings().setJavaScriptEnabled(true);
+                web.loadUrl(oauth_url);
+                web.setWebViewClient(new WebViewClient() {
+                    boolean authComplete = false;
+
+                    @Override
+                    public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                        super.onPageStarted(view, url, favicon);
+                    }
+
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
+                        super.onPageFinished(view, url);
+                        if (url.contains("oauth_verifier") && authComplete == false) {
+                            authComplete = true;
+                            Uri uri = Uri.parse(url);
+                            oauth_verifier = uri.getQueryParameter("oauth_verifier");
+                            auth_dialog.dismiss();
+                            new AccessTokenGet().execute();
+                        } else if (url.contains("denied")) {
+                            auth_dialog.dismiss();
+                            Toast.makeText(getContext(), "Sorry !, Permission Denied", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                Log.d(DBG, auth_dialog.toString());
+                auth_dialog.show();
+                auth_dialog.setCancelable(true);
+            } else {
+                Toast.makeText(getContext(), "Sorry !, Error or Invalid Credentials", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class PostTweet extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        protected String doInBackground(String... args) {
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.setOAuthConsumerKey(pref.getString("CONSUMER_KEY", ""));
+            builder.setOAuthConsumerSecret(pref.getString("CONSUMER_SECRET", ""));
+            AccessToken accessToken = new AccessToken(pref.getString("ACCESS_TOKEN", ""), pref.getString("ACCESS_TOKEN_SECRET", ""));
+            Twitter twitter = new TwitterFactory(builder.build()).getInstance(accessToken);
+            String message = args[0];
+            // if entire message is lengthier than 140 characters
+            message = message.substring(0, Math.min(message.length(), 140));
+            StatusUpdate status = new StatusUpdate(message);
+            if (imageUrl != null) {
+                try {
+                    URL url = new URL(imageUrl);
+                    URLConnection urlConnection = url.openConnection();
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                    status.setMedia("image.png", in);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.d(DBG, "twitter to post: " + status);
+            try {
+                twitter4j.Status response = twitter.updateStatus(status);
+                return response.toString();
+            } catch (TwitterException te) {
+                te.printStackTrace();
+                HandlerThread uiThread = new HandlerThread("UIHandler");
+                uiThread.start();
+                uiHandler = new UIHandler(uiThread.getLooper());
+
+                int errorCode = te.getErrorCode();
+                String errorMessage;
+                if (errorCode == 401) {
+                    // case 1. If no access token granted
+                    errorMessage = "Not granted";
+                    handleUIRequest(DISPLAY_UI_DIALOG, null);
+                } else if (errorCode == 187) {
+                    // case 2. in case of sending duplicated message
+                    // --> parse Error code and display error message using Toast
+                    errorMessage = "This twitter message is duplicated, please check your twitter stream!";
+                    handleUIRequest(DISPLAY_UI_TOAST, errorMessage);
+
+                } else {
+                    // other case: in case of error--> parse Error message and display proper error message using Toast
+                    errorMessage = te.getErrorMessage();
+                    handleUIRequest(DISPLAY_UI_TOAST, errorMessage);
+                }
+                Log.e("ERR", "errorCode: " + errorCode + " errorMessage: " + errorMessage);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String res) {
+            if (res != null) {
+                //progress.dismiss();
+                // case 3. in case of Success -> display success message using Toast
+                Toast.makeText(getContext(), "Tweet successfully Posted", Toast.LENGTH_SHORT).show();
+            } else {
+                //progress.dismiss();
+                Toast.makeText(getContext(), "Error while tweeting !", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class AccessTokenGet extends AsyncTask<String, String, Boolean> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Boolean doInBackground(String... args) {
+            try {
+                accessToken = twitter.getOAuthAccessToken(requestToken, oauth_verifier);
+                SharedPreferences.Editor edit = pref.edit();
+                edit.putString("ACCESS_TOKEN", accessToken.getToken());
+                edit.putString("ACCESS_TOKEN_SECRET", accessToken.getTokenSecret());
+                edit.putBoolean(PREFERENCE_TWITTER_LOGGED_IN, true);
+
+                User user = twitter.showUser(accessToken.getUserId());
+                profile_url = user.getOriginalProfileImageURL();
+                edit.putString("NAME", user.getName());
+                edit.putString("IMAGE_URL", user.getOriginalProfileImageURL());
+                edit.commit();
+            } catch (TwitterException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean response) {
+            if (response) {
+                //progress.hide(); after login, tweet Post right away
+                new PostTweet().execute();
+            }
+        }
+    }
+
+    private final class UIHandler extends Handler {
+        public UIHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case DISPLAY_UI_TOAST: {
+                    Context context = getContext();
+                    Toast t = Toast.makeText(context, (String) msg.obj, Toast.LENGTH_LONG);
+                    t.show();
+                }
+                break;
+                case DISPLAY_UI_DIALOG:
+                    AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
+                    alertDialog.setTitle("You are not granted!");
+                    alertDialog.setMessage("Please login in to Twitter first!");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    protected void handleUIRequest(int id, String message) {
+        Message msg = uiHandler.obtainMessage(id);
+        msg.obj = message;
+        uiHandler.sendMessage(msg);
     }
 
     private void placeOrder() {
