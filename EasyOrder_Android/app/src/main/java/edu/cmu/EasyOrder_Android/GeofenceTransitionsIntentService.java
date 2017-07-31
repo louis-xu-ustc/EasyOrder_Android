@@ -11,9 +11,15 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +77,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             // Send notification and log the transition details.
             sendNotification(geofenceTransitionDetails);
             // TODO add backend service API here to trigger the notification
+            postNotification();
             Log.i(TAG, geofenceTransitionDetails);
         } else {
             // Log the error.
@@ -162,5 +169,28 @@ public class GeofenceTransitionsIntentService extends IntentService {
             default:
                 return getString(R.string.unknown_geofence_transition);
         }
+    }
+
+    private void postNotification() {
+        Response.Listener<JSONObject> notifyCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(getApplicationContext(), "Notification Posted", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        JSONObject input = new JSONObject();
+        try {
+            input.put("content", "Enter Carnegie Mellon University");
+        } catch (JSONException eJson) {
+            Log.d("Customer Tab 2", "Post notification input json parse error");
+        }
+
+        RESTAPI.getInstance(getApplicationContext())
+                .makeRequest(Utils.API_BASE + "/notification/",
+                        Request.Method.PUT,
+                        input,
+                        notifyCallback,
+                        null);
     }
 }

@@ -38,6 +38,7 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
 
 public class RetailerMainActivity extends AppCompatActivity implements
@@ -64,6 +65,8 @@ public class RetailerMainActivity extends AppCompatActivity implements
 
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
+    private SharedPreferences pref;
+
     /**
      * Tracks whether the user requested to add or remove geofences, or to do neither.
      */
@@ -88,7 +91,7 @@ public class RetailerMainActivity extends AppCompatActivity implements
 
     private PendingGeofenceTask mPendingGeofenceTask = PendingGeofenceTask.NONE;
 
-    private boolean isChecked = false;
+    private boolean isGeofenOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +111,8 @@ public class RetailerMainActivity extends AppCompatActivity implements
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+        pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
         // geofencing
         // Empty list for storing geofences.
         mGeofenceList = new ArrayList<>();
@@ -115,7 +120,7 @@ public class RetailerMainActivity extends AppCompatActivity implements
         // Initially set the PendingIntent used in addGeofences() and removeGeofences() to null.
         mGeofencePendingIntent = null;
 
-//        setButtonsEnabledState();
+        isGeofenOn = getGeofencesAdded();
 
         // Get the geofences used. Geofence data is hard coded in this sample.
         populateGeofenceList();
@@ -136,8 +141,13 @@ public class RetailerMainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        Log.d(DBG, "Enter onPrepareOptionsMenu");
         MenuItem checkable = menu.findItem(R.id.retailer_geofence_switch_button);
-        checkable.setChecked(isChecked);
+        if (!isGeofenOn) {
+            checkable.setIcon(R.drawable.ic_location_on_white_24dp);
+        } else {
+            checkable.setIcon(R.drawable.ic_location_off_white_24dp);
+        }
         return true;
     }
 
@@ -155,23 +165,24 @@ public class RetailerMainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(DBG, "Enter onOptionsItemSelected");
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id) {
             case R.id.retailer_geofence_switch_button:
-                if (!isChecked) {
-                    Toast.makeText(getApplicationContext(), "GeoLocation On", Toast.LENGTH_SHORT).show();
+                if (!isGeofenOn) {
+                    isGeofenOn = !isGeofenOn;
+//                    Toast.makeText(getApplicationContext(), "GeoLocation On", Toast.LENGTH_SHORT).show();
                     addGeofencesButtonHandler();
                     item.setIcon(R.drawable.ic_location_off_white_24dp);
                 } else {
-                    Toast.makeText(getApplicationContext(), "GeoLocation Off", Toast.LENGTH_SHORT).show();
+                    isGeofenOn = !isGeofenOn;
+//                    Toast.makeText(getApplicationContext(), "GeoLocation Off", Toast.LENGTH_SHORT).show();
                     removeGeofencesButtonHandler();
                     item.setIcon(R.drawable.ic_location_on_white_24dp);
                 }
-                isChecked = !item.isChecked();
-                item.setChecked(isChecked);
 
                 return true;
 
@@ -182,7 +193,6 @@ public class RetailerMainActivity extends AppCompatActivity implements
 
             case R.id.retailer_setting_logout_button:
                 Toast.makeText(RetailerMainActivity.this, "Log out of retailer account", Toast.LENGTH_SHORT).show();
-                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 SharedPreferences.Editor edit = pref.edit();
                 edit.putBoolean(PREFERENCE_TWITTER_LOGGED_IN, false);
                 edit.apply();
@@ -359,7 +369,6 @@ public class RetailerMainActivity extends AppCompatActivity implements
         mPendingGeofenceTask = PendingGeofenceTask.NONE;
         if (task.isSuccessful()) {
             updateGeofencesAdded(!getGeofencesAdded());
-//            setButtonsEnabledState();
 
             int messageId = getGeofencesAdded() ? R.string.geofences_added :
                     R.string.geofences_removed;

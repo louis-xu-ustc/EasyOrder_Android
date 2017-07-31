@@ -26,8 +26,8 @@
     <string name="add_geofences">Add geofences</string>
     <string name="remove_geofences">Remove geofences</string>
 
-    <string name="geofences_added">Geofences added</string>
-    <string name="geofences_removed">Geofences removed</string>
+    <string name="geofences_added">Geofences On</string>
+    <string name="geofences_removed">Geofences Off</string>
 
     <!-- Error strings -->
     <string name="geofence_not_available">Geofence service is not available now</string>

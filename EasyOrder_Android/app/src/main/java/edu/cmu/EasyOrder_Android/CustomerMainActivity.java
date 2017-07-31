@@ -1,7 +1,11 @@
 package edu.cmu.EasyOrder_Android;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -9,9 +13,11 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +25,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static edu.cmu.EasyOrder_Android.Utils.DBG;
 import static edu.cmu.EasyOrder_Android.Utils.PREFERENCE_TWITTER_LOGGED_IN;
+import static edu.cmu.EasyOrder_Android.Utils.TAG;
 
 public class CustomerMainActivity extends AppCompatActivity implements
         CustomerMapFragment.OnFragmentInteractionListener,
@@ -36,6 +50,10 @@ public class CustomerMainActivity extends AppCompatActivity implements
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private double actionStartY;
+
+    private Long notificationTimestamp = 0L;
+    private Boolean mHasNotified = false;
+    private Context mContext;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -60,7 +78,8 @@ public class CustomerMainActivity extends AppCompatActivity implements
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
+        mContext = getApplicationContext();
+        pollNotification();
     }
 
     @Override
@@ -180,5 +199,75 @@ public class CustomerMainActivity extends AppCompatActivity implements
             }
             return null;
         }
+    }
+
+    private void pollNotification() {
+        Response.Listener<JSONObject> tokenCallback = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    Boolean notify = response.getBoolean("notification");
+                    if (notify) {
+                        String content = response.getString("content");
+                        Long timestamp = response.getLong("modified_at");
+                        Log.d(TAG, "notification: " + notify + " content: " + content + " timestamp: " + timestamp);
+                        notificationTimestamp = timestamp;
+
+                        // Get a notification builder that's compatible with platform versions >= 4
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+                        // Define the notification settings.
+                        builder.setSmallIcon(R.drawable.ic_launcher)
+                                // In a real app, you may want to use a library like Volley
+                                // to decode the Bitmap.
+                                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
+                                        R.drawable.ic_launcher))
+                                .setColor(Color.RED)
+                                .setContentTitle("Geofencing")
+                                .setContentText(content);
+
+                        // Dismiss notification once the user touches it.
+                        builder.setAutoCancel(true);
+
+                        // Get an instance of the Notification manager
+                        NotificationManager mNotificationManager =
+                                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                        // Issue the notification
+                        mNotificationManager.notify(0, builder.build());
+                        mHasNotified = true;
+                    }
+                } catch (JSONException eJson) {
+                    Log.d("Customer Tab 2", "Json Parse Error");
+                }
+
+                if (!mHasNotified) {
+                    Thread newPoll = new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                // FIXME 20s to check notification
+                                Thread.sleep(20000);
+                                pollNotification();
+                            } catch (InterruptedException e) {
+                                Log.d(DBG, e.getMessage());
+                            }
+                        }
+                    });
+                    newPoll.start();
+                }
+            }
+        };
+
+        String URL = Utils.API_BASE + "/notification/";
+        if (notificationTimestamp != 0L) {
+            URL += notificationTimestamp;
+            URL += "/";
+        }
+
+        RESTAPI.getInstance(mContext)
+                .makeRequest(URL,
+                        Request.Method.GET,
+                        null,
+                        tokenCallback,
+                        null);
     }
 }
